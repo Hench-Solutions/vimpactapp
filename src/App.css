@@ -135,6 +135,67 @@
 
 .login-footer { margin-top: 24px; font-size: 12px; color: var(--ink-faint); }
 
+/* ===================== LOGIN · DESIGN 2 (MODERN) ===================== */
+.mlogin-page {
+  position: relative; min-height: 100vh; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  background: linear-gradient(160deg, #12201c, #1c2b22 55%, #0e1613);
+}
+.mlogin-blob { position: absolute; border-radius: 50%; filter: blur(80px); }
+.mlogin-blob-a { width: 420px; height: 420px; background: var(--brand-green); opacity: 0.5; top: -120px; left: -110px; }
+.mlogin-blob-b { width: 380px; height: 380px; background: var(--bottle-orange); opacity: 0.4; bottom: -140px; right: -90px; }
+.mlogin-blob-c { width: 300px; height: 300px; background: var(--bottle-blue); opacity: 0.32; bottom: 12%; left: 6%; }
+
+.mlogin-card {
+  position: relative; z-index: 1; width: 100%; max-width: 400px; color: #fff;
+  background: rgba(255,255,255,0.07); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+  border: 1px solid rgba(255,255,255,0.16); border-radius: 22px; padding: 38px 32px;
+  display: flex; flex-direction: column; align-items: center;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+}
+.mlogin-logo {
+  width: 84px; height: 84px; border-radius: 50%; object-fit: cover; margin-bottom: 14px;
+  box-shadow: 0 0 0 4px rgba(255,255,255,0.12), 0 0 30px rgba(79,158,46,0.4);
+}
+.mlogin-title { font-family: 'Anton', sans-serif; font-size: 26px; letter-spacing: 0.02em; margin: 0; }
+.mlogin-sub { font-size: 12.5px; color: rgba(255,255,255,0.65); text-align: center; margin: 6px 0 26px; max-width: 280px; line-height: 1.45; }
+
+.mlogin-field { position: relative; width: 100%; margin-bottom: 18px; }
+.mlogin-field input {
+  width: 100%; box-sizing: border-box; font-family: inherit;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 12px; padding: 17px 14px 8px; font-size: 14.5px; color: #fff; outline: none;
+}
+.mlogin-field input:focus { border-color: var(--brand-green); background: rgba(255,255,255,0.1); }
+.mlogin-field label {
+  position: absolute; left: 14px; top: 15px; font-size: 14px; color: rgba(255,255,255,0.55);
+  pointer-events: none; transition: all 0.15s ease;
+}
+.mlogin-field input:focus + label,
+.mlogin-field input:not(:placeholder-shown) + label {
+  top: 6px; font-size: 9.5px; color: var(--brand-green); text-transform: uppercase; letter-spacing: 0.05em;
+}
+.mlogin-field em { display: block; margin-top: 6px; font-style: normal; font-size: 11.5px; color: #ff9d8a; font-weight: 600; }
+.mlogin-eye { position: absolute; right: 10px; top: 13px; background: none; border: none; cursor: pointer; font-size: 15px; }
+
+.mlogin-roles { width: 100%; margin-bottom: 22px; }
+.mlogin-roles-label { display: block; margin-bottom: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: rgba(255,255,255,0.55); }
+.mlogin-roles-label i { margin-left: 4px; font-style: normal; text-transform: none; font-weight: 600; color: var(--bottle-orange); }
+.mlogin-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.mlogin-chip {
+  border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.75);
+  padding: 8px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+}
+.mlogin-chip.active { background: var(--brand-green); border-color: var(--brand-green); color: #fff; }
+
+.mlogin-submit {
+  width: 100%; padding: 14px; border-radius: 999px; border: none; cursor: pointer;
+  background: linear-gradient(120deg, var(--brand-green), var(--bottle-blue));
+  color: #fff; font-size: 15px; font-weight: 800; letter-spacing: 0.02em;
+}
+.mlogin-submit:hover { filter: brightness(1.08); }
+.mlogin-footer { margin-top: 20px; font-size: 11px; color: rgba(255,255,255,0.4); }
+
 /* ===================== APP SHELL ===================== */
 .app-wrapper { display: flex; min-height: 100vh; }
 
