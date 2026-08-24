@@ -21,7 +21,7 @@
 }
 
 .login-panel {
-  background: linear-gradient(160deg, var(--brand-green), var(--brand-green-dark));
+  background: linear-gradient(160deg, var(--shell), var(--shell-dark));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -36,8 +36,8 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(120deg, transparent 40%, rgba(255,255,255,0.5) 40%, rgba(255,255,255,0.5) 44%, transparent 44%),
-    linear-gradient(120deg, transparent 55%, var(--bottle-orange) 55%, var(--bottle-orange) 58%, transparent 58%);
+    linear-gradient(120deg, transparent 40%, var(--shell-highlight) 40%, var(--shell-highlight) 44%, transparent 44%),
+    linear-gradient(120deg, transparent 55%, var(--shell-highlight) 55%, var(--shell-highlight) 58%, transparent 58%);
   opacity: 0.5;
 }
 .login-logo {
@@ -61,7 +61,7 @@
   font-size: 32px;
   letter-spacing: 0.02em;
   margin: 0 0 10px;
-  color: #fff;
+  color: var(--shell-highlight);
 }
 .login-panel-text p {
   margin: 0;
@@ -139,7 +139,7 @@
 .mlogin-page {
   position: relative; min-height: 100vh; overflow: hidden;
   display: flex; align-items: center; justify-content: center; padding: 24px;
-  background: linear-gradient(160deg, #12201c, #1c2b22 55%, #0e1613);
+  background: linear-gradient(160deg, var(--brand-green-dark), var(--brand-green) 55%, #1a3312);
 }
 .mlogin-blob { position: absolute; border-radius: 50%; filter: blur(80px); }
 .mlogin-blob-a { width: 420px; height: 420px; background: var(--brand-green); opacity: 0.5; top: -120px; left: -110px; }
