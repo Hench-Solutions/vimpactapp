@@ -4,11 +4,13 @@ import Layout from './components/layout/Layout';
 import Dashboard from './pages/dashboard/Dashboard';
 import ComingSoon from './pages/ComingSoon';
 import { isLoggedIn } from './lib/session';
+import DesignToggle from './components/DesignToggle';
 import './App.css';
 
 export default function App() {
   return (
     <BrowserRouter>
+      <DesignToggle />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route element={<Layout />}>

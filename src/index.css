@@ -30,6 +30,19 @@
   --sidebar-w: 250px;
   --sidebar-w-collapsed: 76px;
   --topbar-h: 60px;
+
+  /* Shell = sidebar / topbar-adjacent / login-panel ground. Design 1
+     (default) grounds the shell in charcoal with green as the pop.
+     Design 2 flips it: green ground, orange as the pop - see [data-visual="green"]. */
+  --shell: var(--accent);
+  --shell-dark: var(--accent-dark);
+  --shell-highlight: var(--brand-green);
+}
+
+:root[data-visual="green"] {
+  --shell: var(--brand-green);
+  --shell-dark: var(--brand-green-dark);
+  --shell-highlight: var(--bottle-orange);
 }
 
 * { box-sizing: border-box; }
