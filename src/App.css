@@ -337,7 +337,7 @@
   font-size: 13px; font-weight: 700; cursor: pointer; padding: 4px 0;
 }
 
-.gpd-layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+.gpd-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
 @media (max-width: 900px) { .gpd-layout { grid-template-columns: 1fr; } }
 
 .gpd-left { background: var(--card); border-radius: 14px; box-shadow: var(--shadow); padding: 18px; }
