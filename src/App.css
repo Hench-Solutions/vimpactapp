@@ -329,3 +329,79 @@
   font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 999px; cursor: pointer;
 }
 .table-action-btn:hover { background: var(--brand-green); color: #fff; }
+
+/* ===================== GATE PASS DETAIL ===================== */
+.gpd-page { display: flex; flex-direction: column; gap: 16px; }
+.gpd-back {
+  align-self: flex-start; border: none; background: none; color: var(--brand-green-dark);
+  font-size: 13px; font-weight: 700; cursor: pointer; padding: 4px 0;
+}
+
+.gpd-layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+@media (max-width: 900px) { .gpd-layout { grid-template-columns: 1fr; } }
+
+.gpd-left { background: var(--card); border-radius: 14px; box-shadow: var(--shadow); padding: 18px; }
+.gpd-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.gpd-tab {
+  border: 1.5px solid var(--line); background: var(--paper); color: var(--ink-soft);
+  font-size: 12.5px; font-weight: 700; padding: 7px 16px; border-radius: 8px 8px 0 0; cursor: pointer;
+}
+.gpd-tab.active { background: var(--brand-green); border-color: var(--brand-green-dark); color: #fff; }
+
+.gpd-preview {
+  width: 100%; border: none; background: var(--paper-sunk); border-radius: 10px; padding: 0;
+  cursor: pointer; position: relative; display: block; overflow: hidden;
+}
+.gpd-preview-hint {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  background: rgba(30,31,33,0.75); color: #fff; font-size: 11.5px; font-weight: 600;
+  padding: 5px 12px; border-radius: 999px;
+}
+
+.doc-placeholder {
+  aspect-ratio: 3/4; max-height: 520px; margin: 0 auto; width: 100%; max-width: 380px;
+  background: #fff; border: 1px solid var(--line); border-radius: 8px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+.doc-placeholder-lines { width: 70%; display: flex; flex-direction: column; gap: 12px; }
+.doc-placeholder-lines span { height: 8px; border-radius: 4px; background: var(--paper-sunk); display: block; }
+.doc-placeholder-tag {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--ink-faint); background: var(--paper); padding: 4px 10px; border-radius: 999px;
+}
+.doc-placeholder.big { max-height: 82vh; max-width: 560px; }
+
+.gpd-right {
+  background: var(--card); border-radius: 14px; box-shadow: var(--shadow); padding: 22px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.gpd-field { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); }
+.gpd-field input {
+  font-family: inherit; font-size: 14px; font-weight: 500; color: var(--ink); padding: 10px 12px;
+  border-radius: 9px; border: 1.5px solid var(--line); background: var(--card); outline: none;
+}
+.gpd-field input:focus { border-color: var(--brand-green); }
+.gpd-field input.gpd-readonly, .gpd-readonly { background: var(--paper-sunk); color: var(--ink-soft); font-weight: 700; }
+
+.gpd-ocr-banner { font-size: 12.5px; font-weight: 600; padding: 10px 12px; border-radius: 9px; }
+.gpd-ocr-banner.reading { background: var(--warn-soft); color: #96721f; }
+.gpd-ocr-banner.failed { background: var(--crit-soft); color: var(--crit); }
+.gpd-ocr-banner.ok { background: var(--good-soft); color: var(--good); }
+
+.gpd-save {
+  margin-top: 4px; padding: 13px; border-radius: 10px; border: 2px solid var(--brand-green-dark);
+  background: var(--brand-green); color: #fff; font-size: 14.5px; font-weight: 800; cursor: pointer;
+}
+.gpd-save:disabled { opacity: 0.5; cursor: default; }
+.gpd-save:not(:disabled):hover { background: var(--brand-green-dark); }
+
+.gpd-lightbox {
+  position: fixed; inset: 0; background: rgba(10,11,13,0.88); z-index: 200;
+  display: flex; align-items: center; justify-content: center; padding: 30px;
+}
+.gpd-lightbox-inner { max-height: 100%; }
+.gpd-lightbox-close {
+  position: absolute; top: 20px; right: 24px; width: 40px; height: 40px; border-radius: 50%;
+  border: none; background: rgba(255,255,255,0.15); color: #fff; font-size: 16px; cursor: pointer;
+}
