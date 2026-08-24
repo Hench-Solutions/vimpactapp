@@ -164,12 +164,12 @@
 .mlogin-field { position: relative; width: 100%; margin-bottom: 18px; }
 .mlogin-field input {
   width: 100%; box-sizing: border-box; font-family: inherit;
-  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 12px; padding: 17px 14px 8px; font-size: 14.5px; color: #fff; outline: none;
+  background: #fff; border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 12px; padding: 17px 14px 8px; font-size: 14.5px; color: var(--ink); outline: none;
 }
-.mlogin-field input:focus { border-color: var(--brand-green); background: rgba(255,255,255,0.1); }
+.mlogin-field input:focus { border-color: var(--brand-green); }
 .mlogin-field label {
-  position: absolute; left: 14px; top: 15px; font-size: 14px; color: rgba(255,255,255,0.55);
+  position: absolute; left: 14px; top: 15px; font-size: 14px; color: var(--ink-faint);
   pointer-events: none; transition: all 0.15s ease;
 }
 .mlogin-field input:focus + label,
@@ -184,11 +184,10 @@
 .mlogin-roles-label i { margin-left: 4px; font-style: normal; text-transform: none; font-weight: 600; color: var(--bottle-orange); }
 .mlogin-select {
   width: 100%; box-sizing: border-box; font-family: inherit;
-  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 12px; padding: 12px 14px; font-size: 14px; font-weight: 600; color: #fff; outline: none;
+  background: #fff; border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 12px; padding: 12px 14px; font-size: 14px; font-weight: 600; color: var(--ink); outline: none;
 }
 .mlogin-select:focus { border-color: var(--brand-green); }
-.mlogin-select option { background: #1c2b22; color: #fff; }
 
 .mlogin-submit {
   width: 100%; padding: 14px; border-radius: 999px; border: none; cursor: pointer;
