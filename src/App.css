@@ -289,3 +289,43 @@
 .placeholder-page h2 { margin: 0 0 10px; font-size: 20px; }
 .placeholder-page p { margin: 0; color: var(--ink-soft); line-height: 1.6; }
 .placeholder-page code { background: var(--paper-sunk); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+
+/* ===================== DATA TABLE PAGES ===================== */
+.table-page { display: flex; flex-direction: column; gap: 18px; }
+
+.table-toolbar {
+  display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap;
+  background: var(--card); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow);
+}
+.table-toolbar label { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); }
+.table-toolbar input[type="date"] {
+  font-family: inherit; font-size: 13.5px; color: var(--ink); padding: 9px 12px;
+  border-radius: 9px; border: 1.5px solid var(--line); background: var(--card); outline: none;
+}
+.table-toolbar input[type="date"]:focus { border-color: var(--brand-green); }
+.table-search-btn {
+  border: 2px solid var(--brand-green-dark); background: var(--brand-green); color: #fff;
+  font-size: 13.5px; font-weight: 700; padding: 10px 24px; border-radius: 9px; cursor: pointer;
+}
+.table-search-btn:hover { background: var(--brand-green-dark); }
+
+.table-wrap {
+  background: var(--card); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden;
+}
+.data-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.data-table th {
+  text-align: left; padding: 12px 16px; background: var(--paper-sunk); color: var(--ink-soft);
+  font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.03em; font-weight: 700;
+  border-bottom: 1px solid var(--line);
+}
+.data-table td { padding: 11px 16px; border-bottom: 1px solid var(--line); color: var(--ink); }
+.data-table tbody tr:last-child td { border-bottom: none; }
+.data-table tbody tr:hover { background: var(--paper); }
+.data-table td.mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+.data-table td.num { font-variant-numeric: tabular-nums; text-align: right; }
+
+.table-action-btn {
+  border: 1.5px solid var(--brand-green); background: var(--brand-green-soft); color: var(--brand-green-dark);
+  font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 999px; cursor: pointer;
+}
+.table-action-btn:hover { background: var(--brand-green); color: #fff; }
