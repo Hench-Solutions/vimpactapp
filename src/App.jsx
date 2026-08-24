@@ -1,0 +1,26 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './pages/auth/Login';
+import Layout from './components/layout/Layout';
+import Dashboard from './pages/dashboard/Dashboard';
+import ComingSoon from './pages/ComingSoon';
+import { isLoggedIn } from './lib/session';
+import './App.css';
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route element={<Layout />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/gatepass/review" element={<ComingSoon />} />
+          <Route path="/gatepass/all" element={<ComingSoon />} />
+          <Route path="/users" element={<ComingSoon />} />
+          <Route path="/users/roles" element={<ComingSoon />} />
+          <Route path="/reports/mis" element={<ComingSoon />} />
+        </Route>
+        <Route path="*" element={<Navigate to={isLoggedIn() ? '/dashboard' : '/login'} replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
