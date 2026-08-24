@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getGatePassRow } from '../../lib/gatePassData';
+import { searchBusyVouchers } from '../../lib/busyVouchers';
 
 // Demo-only placeholder for an uploaded photo - no real images exist yet,
 // this just needs to look like "a page of a document" at a glance.
@@ -15,6 +16,65 @@ function DocPlaceholder({ n }) {
   );
 }
 
+// Vendor + Bill No together are the match key (agreed design); Date and
+// Amount are shown as confirmation, not filtered on, since OCR/typed
+// values can be slightly off - the human picks the right row, the system
+// doesn't silently auto-pick for them.
+function TagVoucherModal({ vendor, invNo, onCancel, onConfirm }) {
+  const candidates = searchBusyVouchers({ vendor, invNo });
+  const [checkedIdx, setCheckedIdx] = useState(null);
+
+  return (
+    <div className="tag-modal-overlay" onClick={onCancel}>
+      <div className="tag-modal" onClick={(e) => e.stopPropagation()}>
+        <h3>Tag BUSY Voucher</h3>
+        <p className="tag-modal-sub">
+          Searching by Vendor <strong>"{vendor || '—'}"</strong> and Invoice No. <strong>"{invNo || '—'}"</strong>
+        </p>
+
+        {candidates.length === 0 ? (
+          <p className="tag-modal-empty">No matching BUSY voucher found for these values yet.</p>
+        ) : (
+          <div className="tag-modal-list">
+            <div className="tag-modal-row tag-modal-head">
+              <span></span>
+              <span>Bill No</span>
+              <span>Vendor</span>
+              <span>Date</span>
+              <span>Amount</span>
+            </div>
+            {candidates.map((c, i) => (
+              <label key={i} className="tag-modal-row">
+                <input
+                  type="checkbox"
+                  checked={checkedIdx === i}
+                  onChange={() => setCheckedIdx(checkedIdx === i ? null : i)}
+                />
+                <span className="mono">{c.billNo}</span>
+                <span>{c.vendor}</span>
+                <span>{c.date}</span>
+                <span className="num">₹{c.amount}</span>
+              </label>
+            ))}
+          </div>
+        )}
+
+        <div className="tag-modal-actions">
+          <button type="button" className="btn-ghost" onClick={onCancel}>Cancel</button>
+          <button
+            type="button"
+            className="btn-primary"
+            disabled={checkedIdx === null}
+            onClick={() => onConfirm(candidates[checkedIdx])}
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function GatePassDetail() {
   const { gatePassNo } = useParams();
   const navigate = useNavigate();
@@ -25,11 +85,14 @@ export default function GatePassDetail() {
   const [ocrState, setOcrState] = useState('reading'); // reading | ok | failed
   const [form, setForm] = useState({ invNo: '', invoiceDate: '', invoiceName: '', amount: '' });
   const [saved, setSaved] = useState(false);
+  const [showTagModal, setShowTagModal] = useState(false);
+  const [taggedVoucher, setTaggedVoucher] = useState(null);
 
   useEffect(() => {
     if (!row) return;
     setOcrState('reading');
     setForm({ invNo: '', invoiceDate: '', invoiceName: '', amount: '' });
+    setTaggedVoucher(null);
     const t = setTimeout(() => {
       if (row.invNo) {
         setForm({ invNo: row.invNo, invoiceDate: row.invoiceDate, invoiceName: row.invoiceName, amount: row.amount });
@@ -52,6 +115,12 @@ export default function GatePassDetail() {
 
   function handleField(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
+    setTaggedVoucher(null); // editing the invoice fields invalidates a prior tag - re-confirm needed
+  }
+
+  function handleTagConfirm(voucher) {
+    setTaggedVoucher(voucher);
+    setShowTagModal(false);
   }
 
   function handleSave(e) {
@@ -59,6 +128,8 @@ export default function GatePassDetail() {
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }
+
+  const fieldsReady = ocrState !== 'reading';
 
   return (
     <div className="gpd-page">
@@ -103,23 +174,44 @@ export default function GatePassDetail() {
 
           <div className="gpd-field">
             <span>Invoice No.</span>
-            <input type="text" value={form.invNo} disabled={ocrState === 'reading'} onChange={(e) => handleField('invNo', e.target.value)} />
+            <input type="text" value={form.invNo} disabled={!fieldsReady} onChange={(e) => handleField('invNo', e.target.value)} />
           </div>
           <div className="gpd-field">
             <span>Invoice Date</span>
-            <input type="date" value={form.invoiceDate} disabled={ocrState === 'reading'} onChange={(e) => handleField('invoiceDate', e.target.value)} />
-          </div>
-          <div className="gpd-field">
-            <span>Invoice Name</span>
-            <input type="text" value={form.invoiceName} disabled={ocrState === 'reading'} onChange={(e) => handleField('invoiceName', e.target.value)} />
-          </div>
-          <div className="gpd-field">
-            <span>Amount</span>
-            <input type="number" value={form.amount} disabled={ocrState === 'reading'} onChange={(e) => handleField('amount', e.target.value)} />
+            <input type="date" value={form.invoiceDate} disabled={!fieldsReady} onChange={(e) => handleField('invoiceDate', e.target.value)} />
           </div>
 
-          <button type="submit" className="gpd-save" disabled={ocrState === 'reading'}>
-            {saved ? 'Saved ✓ (demo only)' : 'SAVE'}
+          <div className="gpd-field">
+            <span>Invoice Name</span>
+            <div className="gpd-field-with-action">
+              <input type="text" value={form.invoiceName} disabled={!fieldsReady} onChange={(e) => handleField('invoiceName', e.target.value)} />
+              <button
+                type="button"
+                className="gpd-tag-btn"
+                disabled={!fieldsReady}
+                onClick={() => setShowTagModal(true)}
+                title="Search BUSY and tag the matching Purchase Voucher"
+              >
+                🔍 Tag BUSY Voucher
+              </button>
+            </div>
+          </div>
+
+          {taggedVoucher && (
+            <div className="gpd-ocr-banner ok">
+              ✓ Matched to BUSY voucher <strong>{taggedVoucher.billNo}</strong> ({taggedVoucher.vendor}, ₹{taggedVoucher.amount})
+            </div>
+          )}
+
+          <div className="gpd-field">
+            <span>Amount</span>
+            <input type="number" value={form.amount} disabled={!fieldsReady} onChange={(e) => handleField('amount', e.target.value)} />
+          </div>
+
+          <button type="submit" className="gpd-save" disabled={!fieldsReady}>
+            {saved
+              ? (taggedVoucher ? 'Saved & Matched ✓ (demo only)' : 'Saved ✓ (demo only)')
+              : 'SAVE'}
           </button>
         </form>
       </div>
@@ -131,6 +223,15 @@ export default function GatePassDetail() {
           </div>
           <button className="gpd-lightbox-close" onClick={() => setLightbox(false)} aria-label="Close">✕</button>
         </div>
+      )}
+
+      {showTagModal && (
+        <TagVoucherModal
+          vendor={form.invoiceName}
+          invNo={form.invNo}
+          onCancel={() => setShowTagModal(false)}
+          onConfirm={handleTagConfirm}
+        />
       )}
     </div>
   );
