@@ -2,13 +2,15 @@ import { useState } from 'react';
 
 // Dummy data only, per instruction - wired to the real GatePass list API
 // (GET /v1/GatePass/list, already live for the guard PWA) once this page
-// is signed off.
+// is signed off. Guard Name / Inv No. aren't on that response yet - both
+// are easy additions (Guard Name via a join to MstUser, Inv No. once
+// OCR/reconciliation exists) when this page goes live for real.
 const DUMMY_ROWS = [
-  { gatePassNo: '240826001', invoiceNo: 'VIJ/903/2026-27', invoiceDate: '24-Aug-2026', invoiceAmt: '7,820.00', vendor: 'Flipkart India Pvt. Ltd.' },
-  { gatePassNo: '240826002', invoiceNo: '473', invoiceDate: '24-Aug-2026', invoiceAmt: '44,202.00', vendor: 'Srinivasa Pet Bottles' },
-  { gatePassNo: '240826003', invoiceNo: '2026-27/303', invoiceDate: '23-Aug-2026', invoiceAmt: '27,584.00', vendor: 'Liberty Packages' },
-  { gatePassNo: '240826004', invoiceNo: '917/26-27', invoiceDate: '23-Aug-2026', invoiceAmt: '84,960.00', vendor: 'Hi Tech Plastics' },
-  { gatePassNo: '240826005', invoiceNo: '', invoiceDate: '', invoiceAmt: '', vendor: '' },
+  { gatePassNo: '240826001', docs: 3, entryDate: '24-Aug-2026', guard: 'Ramesh', invNo: 'VIJ/903/2026-27' },
+  { gatePassNo: '240826002', docs: 1, entryDate: '24-Aug-2026', guard: 'Ramesh', invNo: '473' },
+  { gatePassNo: '240826003', docs: 2, entryDate: '23-Aug-2026', guard: 'Suresh', invNo: '2026-27/303' },
+  { gatePassNo: '240826004', docs: 1, entryDate: '23-Aug-2026', guard: 'Suresh', invNo: '917/26-27' },
+  { gatePassNo: '240826005', docs: '', entryDate: '', guard: '', invNo: '' },
 ];
 
 export default function AllEntries() {
@@ -35,10 +37,10 @@ export default function AllEntries() {
             <tr>
               <th>S. No.</th>
               <th>Gate Pass No.</th>
-              <th>Invoice No.</th>
-              <th>Invoice Date</th>
-              <th>Invoice Amt</th>
-              <th>Vendor Name</th>
+              <th>No. of Documents</th>
+              <th>Entry Date</th>
+              <th>Guard Name</th>
+              <th>Inv No.</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -47,10 +49,10 @@ export default function AllEntries() {
               <tr key={i}>
                 <td>{i + 1}</td>
                 <td className="mono">{row.gatePassNo}</td>
-                <td>{row.invoiceNo}</td>
-                <td>{row.invoiceDate}</td>
-                <td className="num">{row.invoiceAmt}</td>
-                <td>{row.vendor}</td>
+                <td className="num">{row.docs}</td>
+                <td>{row.entryDate}</td>
+                <td>{row.guard}</td>
+                <td>{row.invNo}</td>
                 <td>
                   {row.gatePassNo && <button type="button" className="table-action-btn">View</button>}
                 </td>
