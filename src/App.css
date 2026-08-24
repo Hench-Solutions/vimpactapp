@@ -21,7 +21,7 @@
 }
 
 .login-panel {
-  background: linear-gradient(160deg, var(--shell), var(--shell-dark));
+  background: linear-gradient(160deg, var(--brand-green), var(--brand-green-dark));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -36,8 +36,8 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(120deg, transparent 40%, var(--shell-highlight) 40%, var(--shell-highlight) 44%, transparent 44%),
-    linear-gradient(120deg, transparent 55%, var(--shell-highlight) 55%, var(--shell-highlight) 58%, transparent 58%);
+    linear-gradient(120deg, transparent 40%, rgba(255,255,255,0.5) 40%, rgba(255,255,255,0.5) 44%, transparent 44%),
+    linear-gradient(120deg, transparent 55%, var(--bottle-orange) 55%, var(--bottle-orange) 58%, transparent 58%);
   opacity: 0.5;
 }
 .login-logo {
@@ -61,7 +61,7 @@
   font-size: 32px;
   letter-spacing: 0.02em;
   margin: 0 0 10px;
-  color: var(--shell-highlight);
+  color: #fff;
 }
 .login-panel-text p {
   margin: 0;
@@ -181,12 +181,13 @@
 .mlogin-roles { width: 100%; margin-bottom: 22px; }
 .mlogin-roles-label { display: block; margin-bottom: 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: rgba(255,255,255,0.55); }
 .mlogin-roles-label i { margin-left: 4px; font-style: normal; text-transform: none; font-weight: 600; color: var(--bottle-orange); }
-.mlogin-chips { display: flex; gap: 8px; flex-wrap: wrap; }
-.mlogin-chip {
-  border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.75);
-  padding: 8px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+.mlogin-select {
+  width: 100%; box-sizing: border-box; font-family: inherit;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 12px; padding: 12px 14px; font-size: 14px; font-weight: 600; color: #fff; outline: none;
 }
-.mlogin-chip.active { background: var(--brand-green); border-color: var(--brand-green); color: #fff; }
+.mlogin-select:focus { border-color: var(--brand-green); }
+.mlogin-select option { background: #1c2b22; color: #fff; }
 
 .mlogin-submit {
   width: 100%; padding: 14px; border-radius: 999px; border: none; cursor: pointer;

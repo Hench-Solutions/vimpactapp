@@ -146,18 +146,9 @@ function ModernLogin({ username, setUsername, password, setPassword, showPass, s
 
         <div className="mlogin-roles">
           <span className="mlogin-roles-label">Role <i>demo only</i></span>
-          <div className="mlogin-chips">
-            {DEMO_ROLES.map((r) => (
-              <button
-                type="button"
-                key={r}
-                className={`mlogin-chip ${role === r ? 'active' : ''}`}
-                onClick={() => setRole(r)}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
+          <select className="mlogin-select" value={role} onChange={(e) => setRole(e.target.value)}>
+            {DEMO_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+          </select>
         </div>
 
         <button type="submit" className="mlogin-submit">Log In →</button>
