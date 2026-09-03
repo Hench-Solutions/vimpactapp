@@ -1,135 +1,104 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { getGatePassRow } from '../../lib/gatePassData';
-import { searchBusyVouchers } from '../../lib/busyVouchers';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { fetchGatePassPhotos, runGatePassOcr, saveGatePassInvoice } from '../../lib/api';
 
-// Demo-only placeholder for an uploaded photo - no real images exist yet,
-// this just needs to look like "a page of a document" at a glance.
-function DocPlaceholder({ n }) {
-  return (
-    <div className="doc-placeholder">
-      <div className="doc-placeholder-lines">
-        <span /><span /><span style={{ width: '60%' }} />
-      </div>
-      <span className="doc-placeholder-tag">Pic {n}</span>
-    </div>
-  );
+function formatDateTime(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('en-GB', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  });
 }
 
-// Vendor + Bill No together are the match key (agreed design); Date and
-// Amount are shown as confirmation, not filtered on, since OCR/typed
-// values can be slightly off - the human picks the right row, the system
-// doesn't silently auto-pick for them.
-function TagVoucherModal({ vendor, invNo, onCancel, onConfirm }) {
-  const candidates = searchBusyVouchers({ vendor, invNo });
-  const [checkedIdx, setCheckedIdx] = useState(null);
-
-  return (
-    <div className="tag-modal-overlay" onClick={onCancel}>
-      <div className="tag-modal" onClick={(e) => e.stopPropagation()}>
-        <h3>Tag BUSY Voucher</h3>
-        <p className="tag-modal-sub">
-          Searching by Vendor <strong>"{vendor || '—'}"</strong> and Invoice No. <strong>"{invNo || '—'}"</strong>
-        </p>
-
-        {candidates.length === 0 ? (
-          <p className="tag-modal-empty">No matching BUSY voucher found for these values yet.</p>
-        ) : (
-          <div className="tag-modal-list">
-            <div className="tag-modal-row tag-modal-head">
-              <span></span>
-              <span>Bill No</span>
-              <span>Vendor</span>
-              <span>Date</span>
-              <span>Amount</span>
-            </div>
-            {candidates.map((c, i) => (
-              <label key={i} className="tag-modal-row">
-                <input
-                  type="checkbox"
-                  checked={checkedIdx === i}
-                  onChange={() => setCheckedIdx(checkedIdx === i ? null : i)}
-                />
-                <span className="mono">{c.billNo}</span>
-                <span>{c.vendor}</span>
-                <span>{c.date}</span>
-                <span className="num">₹{c.amount}</span>
-              </label>
-            ))}
-          </div>
-        )}
-
-        <div className="tag-modal-actions">
-          <button type="button" className="btn-ghost" onClick={onCancel}>Cancel</button>
-          <button
-            type="button"
-            className="btn-primary"
-            disabled={checkedIdx === null}
-            onClick={() => onConfirm(candidates[checkedIdx])}
-          >
-            Save
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+const OCR_BANNER = {
+  ok:     { cls: 'ok',      text: '✓ Filled automatically from OCR — check before saving.' },
+  failed: { cls: 'failed',  text: '⚠ OCR could not read this document — please enter the details manually.' },
+  manual: { cls: 'ok',      text: '✓ Saved manually.' },
+  pending: null,
+};
 
 export default function GatePassDetail() {
-  const { gatePassNo } = useParams();
+  const { gatePassId } = useParams();
   const navigate = useNavigate();
-  const row = getGatePassRow(gatePassNo);
+  const location = useLocation();
+  const row = location.state; // passed from AllEntries - gatePassNo, guardName, status, createdAt, invoice fields
 
-  const [activePic, setActivePic] = useState(1);
+  const [photos, setPhotos] = useState([]);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [lightbox, setLightbox] = useState(false);
-  const [ocrState, setOcrState] = useState('reading'); // reading | ok | failed
-  const [form, setForm] = useState({ invNo: '', invoiceDate: '', invoiceName: '', amount: '' });
+
+  const [invoice, setInvoice] = useState({
+    invoiceNo: row?.invoiceNo || '',
+    invoiceDate: row?.invoiceDate ? row.invoiceDate.slice(0, 10) : '',
+    vendorName: row?.vendorName || '',
+    amount: row?.amount ?? '',
+  });
+  const [ocrStatus, setOcrStatus] = useState(row?.ocrStatus || 'pending');
+  const [ocrRunning, setOcrRunning] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [showTagModal, setShowTagModal] = useState(false);
-  const [taggedVoucher, setTaggedVoucher] = useState(null);
 
   useEffect(() => {
-    if (!row) return;
-    setOcrState('reading');
-    setForm({ invNo: '', invoiceDate: '', invoiceName: '', amount: '' });
-    setTaggedVoucher(null);
-    const t = setTimeout(() => {
-      if (row.invNo) {
-        setForm({ invNo: row.invNo, invoiceDate: row.invoiceDate, invoiceName: row.invoiceName, amount: row.amount });
-        setOcrState('ok');
-      } else {
-        setOcrState('failed');
-      }
-    }, 1100);
-    return () => clearTimeout(t);
-  }, [row]);
+    let cancelled = false;
+    setLoading(true);
+    setError('');
+    fetchGatePassPhotos(gatePassId)
+      .then((list) => { if (!cancelled) { setPhotos(list); setActiveIdx(0); } })
+      .catch((err) => { if (!cancelled) setError(err.message); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [gatePassId]);
 
-  if (!row) {
-    return (
-      <div className="placeholder-page">
-        <h2>Not found</h2>
-        <p>No demo data for Gate Pass <code>{gatePassNo}</code>.</p>
-      </div>
-    );
+  const activePhoto = photos[activeIdx];
+
+  async function handleRunOcr() {
+    setOcrRunning(true);
+    setFormError('');
+    try {
+      const result = await runGatePassOcr(gatePassId);
+      setInvoice({
+        invoiceNo: result.invoiceNo || '',
+        invoiceDate: result.invoiceDate ? result.invoiceDate.slice(0, 10) : '',
+        vendorName: result.vendorName || '',
+        amount: result.amount ?? '',
+      });
+      setOcrStatus(result.ocrStatus);
+    } catch (err) {
+      setFormError(err.message);
+      setOcrStatus('failed');
+    } finally {
+      setOcrRunning(false);
+    }
   }
 
-  function handleField(field, value) {
-    setForm((prev) => ({ ...prev, [field]: value }));
-    setTaggedVoucher(null); // editing the invoice fields invalidates a prior tag - re-confirm needed
+  function set(field, value) {
+    setInvoice((prev) => ({ ...prev, [field]: value }));
   }
 
-  function handleTagConfirm(voucher) {
-    setTaggedVoucher(voucher);
-    setShowTagModal(false);
-  }
-
-  function handleSave(e) {
+  async function handleSave(e) {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    setFormError('');
+    setSaving(true);
+    try {
+      await saveGatePassInvoice(gatePassId, {
+        InvoiceNo: invoice.invoiceNo.trim() || null,
+        InvoiceDate: invoice.invoiceDate || null,
+        VendorName: invoice.vendorName.trim() || null,
+        Amount: invoice.amount === '' ? null : Number(invoice.amount),
+      });
+      setOcrStatus('manual');
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      setFormError(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  const fieldsReady = ocrState !== 'reading';
+  const banner = OCR_BANNER[ocrStatus];
 
   return (
     <div className="gpd-page">
@@ -137,101 +106,88 @@ export default function GatePassDetail() {
 
       <div className="gpd-layout">
         <div className="gpd-left">
-          <div className="gpd-tabs">
-            {Array.from({ length: row.docs }, (_, i) => i + 1).map((n) => (
-              <button
-                key={n}
-                type="button"
-                className={`gpd-tab ${activePic === n ? 'active' : ''}`}
-                onClick={() => setActivePic(n)}
-              >
-                Pic {n}
-              </button>
-            ))}
-          </div>
+          {loading && <p className="tag-modal-sub">Loading documents…</p>}
+          {error && <p className="tag-modal-sub" style={{ color: 'var(--crit)' }}>{error}</p>}
 
-          <button type="button" className="gpd-preview" onClick={() => setLightbox(true)}>
-            <DocPlaceholder n={activePic} />
-            <span className="gpd-preview-hint">Click to view full size</span>
-          </button>
+          {!loading && !error && photos.length === 0 && (
+            <p className="tag-modal-sub">No documents uploaded for this gate pass.</p>
+          )}
+
+          {!loading && !error && photos.length > 0 && (
+            <>
+              <div className="gpd-tabs">
+                {photos.map((p, i) => (
+                  <button
+                    key={p.photoId}
+                    type="button"
+                    className={`gpd-tab ${activeIdx === i ? 'active' : ''}`}
+                    onClick={() => setActiveIdx(i)}
+                  >
+                    Pic {i + 1}
+                  </button>
+                ))}
+              </div>
+
+              <button type="button" className="gpd-preview" onClick={() => setLightbox(true)}>
+                <img src={activePhoto.url} alt={`Document ${activeIdx + 1}`} style={{ maxWidth: '100%', borderRadius: 8 }} />
+                <span className="gpd-preview-hint">Click to view full size</span>
+              </button>
+            </>
+          )}
         </div>
 
         <form className="gpd-right" onSubmit={handleSave}>
           <div className="gpd-field">
             <span>Gate Pass No.</span>
-            <input type="text" value={row.gatePassNo} readOnly className="gpd-readonly" />
+            <input type="text" value={row?.gatePassNo || gatePassId} readOnly className="gpd-readonly" />
+          </div>
+          <div className="gpd-field">
+            <span>Guard</span>
+            <input type="text" value={row?.guardName || '—'} readOnly className="gpd-readonly" />
+          </div>
+          <div className="gpd-field">
+            <span>Entry Date</span>
+            <input type="text" value={formatDateTime(row?.createdAt)} readOnly className="gpd-readonly" />
           </div>
 
-          {ocrState === 'reading' && (
-            <div className="gpd-ocr-banner reading">⏳ Reading document with OCR…</div>
-          )}
-          {ocrState === 'failed' && (
-            <div className="gpd-ocr-banner failed">⚠ OCR could not read this document — please enter the details manually.</div>
-          )}
-          {ocrState === 'ok' && (
-            <div className="gpd-ocr-banner ok">✓ Filled automatically from OCR — check before saving.</div>
-          )}
+          <button type="button" className="table-search-btn" onClick={handleRunOcr} disabled={ocrRunning || photos.length === 0} style={{ marginBottom: 8 }}>
+            {ocrRunning ? 'Reading document…' : '🔍 Run OCR'}
+          </button>
+
+          {banner && <div className={`gpd-ocr-banner ${banner.cls}`}>{banner.text}</div>}
 
           <div className="gpd-field">
             <span>Invoice No.</span>
-            <input type="text" value={form.invNo} disabled={!fieldsReady} onChange={(e) => handleField('invNo', e.target.value)} />
+            <input type="text" value={invoice.invoiceNo} onChange={(e) => set('invoiceNo', e.target.value)} />
           </div>
           <div className="gpd-field">
             <span>Invoice Date</span>
-            <input type="date" value={form.invoiceDate} disabled={!fieldsReady} onChange={(e) => handleField('invoiceDate', e.target.value)} />
+            <input type="date" value={invoice.invoiceDate} onChange={(e) => set('invoiceDate', e.target.value)} />
           </div>
-
           <div className="gpd-field">
-            <span>Invoice Name</span>
-            <div className="gpd-field-with-action">
-              <input type="text" value={form.invoiceName} disabled={!fieldsReady} onChange={(e) => handleField('invoiceName', e.target.value)} />
-              <button
-                type="button"
-                className="gpd-tag-btn"
-                disabled={!fieldsReady}
-                onClick={() => setShowTagModal(true)}
-                title="Search BUSY and tag the matching Purchase Voucher"
-              >
-                🔍 Tag BUSY Voucher
-              </button>
-            </div>
+            <span>Vendor Name</span>
+            <input type="text" value={invoice.vendorName} onChange={(e) => set('vendorName', e.target.value)} placeholder="OCR doesn't read this reliably - enter manually" />
           </div>
-
-          {taggedVoucher && (
-            <div className="gpd-ocr-banner ok">
-              ✓ Matched to BUSY voucher <strong>{taggedVoucher.billNo}</strong> ({taggedVoucher.vendor}, ₹{taggedVoucher.amount})
-            </div>
-          )}
-
           <div className="gpd-field">
             <span>Amount</span>
-            <input type="number" value={form.amount} disabled={!fieldsReady} onChange={(e) => handleField('amount', e.target.value)} />
+            <input type="number" value={invoice.amount} onChange={(e) => set('amount', e.target.value)} />
           </div>
 
-          <button type="submit" className="gpd-save" disabled={!fieldsReady}>
-            {saved
-              ? (taggedVoucher ? 'Saved & Matched ✓ (demo only)' : 'Saved ✓ (demo only)')
-              : 'SAVE'}
+          {formError && <p className="login-field" style={{ color: 'var(--crit)' }}>{formError}</p>}
+
+          <button type="submit" className="gpd-save" disabled={saving}>
+            {saving ? 'Saving…' : saved ? 'Saved ✓' : 'SAVE'}
           </button>
         </form>
       </div>
 
-      {lightbox && (
+      {lightbox && activePhoto && (
         <div className="gpd-lightbox" onClick={() => setLightbox(false)}>
           <div className="gpd-lightbox-inner" onClick={(e) => e.stopPropagation()}>
-            <DocPlaceholder n={activePic} big />
+            <img src={activePhoto.url} alt={`Document ${activeIdx + 1} full size`} style={{ maxWidth: '100%', maxHeight: '100%' }} />
           </div>
           <button className="gpd-lightbox-close" onClick={() => setLightbox(false)} aria-label="Close">✕</button>
         </div>
-      )}
-
-      {showTagModal && (
-        <TagVoucherModal
-          vendor={form.invoiceName}
-          invNo={form.invNo}
-          onCancel={() => setShowTagModal(false)}
-          onConfirm={handleTagConfirm}
-        />
       )}
     </div>
   );

@@ -2,8 +2,8 @@
 // User / Page / Group tables (Modules -> Pages -> Role-Page mapping).
 // Nothing here touches a database - it exists purely so the Sidebar can
 // be shown actually changing shape per role before that wiring exists.
-
-export const DEMO_ROLES = ['Admin', 'Office Staff', 'Guard'];
+// Keys match the Role values the API returns (Users module) - "Guard"
+// never actually reaches here since guards can't log into vimpactapp.
 
 const MENUS = {
   Admin: [
@@ -30,7 +30,7 @@ const MENUS = {
       items: [{ pageId: 'mis', pageTitle: 'MIS Reports', pageUrl: '/reports/mis' }],
     },
   ],
-  'Office Staff': [
+  OfficeStaff: [
     { pageId: 'dash', section: 'Dashboard', pageUrl: '/dashboard', items: [] },
     {
       pageId: 'gatepass',

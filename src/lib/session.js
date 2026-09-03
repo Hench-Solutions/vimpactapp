@@ -1,6 +1,5 @@
-// UI-only stand-in - Login.jsx does not call any API yet. Once the real
-// Auth endpoint exists this becomes the same shape session.js already
-// uses in guard-pwa (token from the server instead of a picked role).
+// Session shape now comes from the real /v1/User Login response instead of
+// the picked-role stand-in - see lib/api.js loginUser().
 
 const SESSION_KEY = 'vimpactapp:session';
 
@@ -9,8 +8,8 @@ export function getSession() {
   return raw ? JSON.parse(raw) : null;
 }
 
-export function startSession({ username, role }) {
-  const session = { username, role, loggedInAt: new Date().toISOString() };
+export function startSession(user) {
+  const session = { ...user, loggedInAt: new Date().toISOString() };
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
   return session;
 }

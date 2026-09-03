@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { startSession } from '../../lib/session';
+import { loginUser } from '../../lib/api';
 import { useVisual } from '../../lib/useVisual';
-import { DEMO_ROLES } from '../../lib/mockData';
 import logo from '../../assets/vimpact-logo.png';
 
 export default function Login() {
@@ -11,23 +11,29 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
-  const [role, setRole] = useState(DEMO_ROLES[0]);
   const [errors, setErrors] = useState({});
+  const [formError, setFormError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     const next = {};
-    if (!username.trim()) next.username = 'User ID is required';
+    if (!username.trim()) next.username = 'Username is required';
     if (!password) next.password = 'Password is required';
-    if (Object.keys(next).length) {
-      setErrors(next);
-      return;
+    setErrors(next);
+    setFormError('');
+    if (Object.keys(next).length) return;
+
+    setLoading(true);
+    try {
+      const user = await loginUser(username.trim(), password);
+      startSession(user);
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      setFormError(err.message);
+    } finally {
+      setLoading(false);
     }
-    // No API call yet - UI only. Once /v1/Auth exists this becomes the
-    // same fetch + startSession pattern already used in guard-pwa, and
-    // `role` will come back from the server instead of this picker.
-    startSession({ username: username.trim(), role });
-    navigate('/dashboard', { replace: true });
   }
 
   return visual === 'green'
@@ -36,8 +42,7 @@ export default function Login() {
         username={username} setUsername={setUsername}
         password={password} setPassword={setPassword}
         showPass={showPass} setShowPass={setShowPass}
-        role={role} setRole={setRole}
-        errors={errors} onSubmit={handleSubmit}
+        errors={errors} formError={formError} loading={loading} onSubmit={handleSubmit}
       />
     )
     : (
@@ -45,14 +50,13 @@ export default function Login() {
         username={username} setUsername={setUsername}
         password={password} setPassword={setPassword}
         showPass={showPass} setShowPass={setShowPass}
-        role={role} setRole={setRole}
-        errors={errors} onSubmit={handleSubmit}
+        errors={errors} formError={formError} loading={loading} onSubmit={handleSubmit}
       />
     );
 }
 
 // ───────────────────────── Design 1 · Classic ─────────────────────────
-function ClassicLogin({ username, setUsername, password, setPassword, showPass, setShowPass, role, setRole, errors, onSubmit }) {
+function ClassicLogin({ username, setUsername, password, setPassword, showPass, setShowPass, errors, formError, loading, onSubmit }) {
   return (
     <div className="login-page">
       <div className="login-panel">
@@ -69,7 +73,7 @@ function ClassicLogin({ username, setUsername, password, setPassword, showPass, 
           <p className="login-sub">Sign in to continue</p>
 
           <label className="login-field">
-            <span>User ID</span>
+            <span>Username</span>
             <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" autoFocus />
             {errors.username && <em>{errors.username}</em>}
           </label>
@@ -85,14 +89,9 @@ function ClassicLogin({ username, setUsername, password, setPassword, showPass, 
             {errors.password && <em>{errors.password}</em>}
           </label>
 
-          <label className="login-field login-field-demo">
-            <span>Role <em className="login-demo-tag">demo only - comes from server later</em></span>
-            <select value={role} onChange={(e) => setRole(e.target.value)}>
-              {DEMO_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
-            </select>
-          </label>
+          {formError && <p className="login-field" style={{ color: 'var(--crit)' }}>{formError}</p>}
 
-          <button type="submit" className="login-submit">Log In</button>
+          <button type="submit" className="login-submit" disabled={loading}>{loading ? 'Signing in…' : 'Log In'}</button>
         </form>
 
         <p className="login-footer">© {new Date().getFullYear()} Vimpact Care Pvt. Ltd.</p>
@@ -102,7 +101,7 @@ function ClassicLogin({ username, setUsername, password, setPassword, showPass, 
 }
 
 // ───────────────────────── Design 2 · Modern ─────────────────────────
-function ModernLogin({ username, setUsername, password, setPassword, showPass, setShowPass, role, setRole, errors, onSubmit }) {
+function ModernLogin({ username, setUsername, password, setPassword, showPass, setShowPass, errors, formError, loading, onSubmit }) {
   return (
     <div className="mlogin-page">
       <span className="mlogin-blob mlogin-blob-a" />
@@ -124,7 +123,7 @@ function ModernLogin({ username, setUsername, password, setPassword, showPass, s
             autoComplete="username"
             autoFocus
           />
-          <label htmlFor="mlogin-user">User ID</label>
+          <label htmlFor="mlogin-user">Username</label>
           {errors.username && <em>{errors.username}</em>}
         </div>
 
@@ -144,14 +143,9 @@ function ModernLogin({ username, setUsername, password, setPassword, showPass, s
           {errors.password && <em>{errors.password}</em>}
         </div>
 
-        <div className="mlogin-roles">
-          <span className="mlogin-roles-label">Role <i>demo only</i></span>
-          <select className="mlogin-select" value={role} onChange={(e) => setRole(e.target.value)}>
-            {DEMO_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
-          </select>
-        </div>
+        {formError && <em style={{ display: 'block', marginBottom: 12 }}>{formError}</em>}
 
-        <button type="submit" className="mlogin-submit">Log In →</button>
+        <button type="submit" className="mlogin-submit" disabled={loading}>{loading ? 'Signing in…' : 'Log In →'}</button>
         <p className="mlogin-footer">© {new Date().getFullYear()} Vimpact Care Pvt. Ltd.</p>
       </form>
     </div>
