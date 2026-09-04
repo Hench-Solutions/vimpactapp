@@ -3,7 +3,7 @@
 // The Users endpoints don't require a token yet - this stage is
 // capture-and-view only, no login/JWT wiring for vimpactapp itself.
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5035';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 async function unwrap(res) {
   const data = await res.json().catch(() => null);
@@ -53,8 +53,8 @@ export async function loginUser(username, password) {
   return postJson('/v1/User', { Mode: 'Login', Username: username, Password: password });
 }
 
-// Server photo paths come back as "/gatepass/{no}/{file}" (relative to
-// wwwroot) - same convention as guard-pwa's resolvePhotoUrl.
+// Server photo paths come back as "/gatepass/{no}/{file}" — same
+// convention as guard-pwa's resolvePhotoUrl.
 export function resolvePhotoUrl(relativePath) {
   return relativePath ? `${API_BASE}${relativePath}` : null;
 }
