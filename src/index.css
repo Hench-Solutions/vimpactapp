@@ -7,7 +7,7 @@
   --ink-faint: #8b8f8c;
   --line: #e1e3df;
 
-  --accent: #24262b;        /* charcoal - sidebar/topbar ground */
+  --accent: #24262b;
   --accent-dark: #131417;
   --accent-soft: #24262b17;
 
@@ -31,18 +31,40 @@
   --sidebar-w-collapsed: 76px;
   --topbar-h: 60px;
 
-  /* Shell = sidebar / topbar-adjacent / login-panel ground. Design 1
-     (default) grounds the shell in charcoal with green as the pop.
-     Design 2 flips it: green ground, orange as the pop - see [data-visual="green"]. */
   --shell: var(--accent);
   --shell-dark: var(--accent-dark);
+  --shell-mid: #2c2f35;
   --shell-highlight: var(--brand-green);
+  --shell-text: rgba(255, 255, 255, 0.72);
+  --shell-text-strong: #ffffff;
+  --nav-active-bg: rgba(79, 158, 46, 0.18);
+  --nav-hover-bg: rgba(255, 255, 255, 0.06);
+  --nav-active-bar: var(--brand-green);
+  --surface-radius: 14px;
+  --focus-color: var(--brand-green);
 }
 
 :root[data-visual="green"] {
-  --shell: var(--brand-green);
-  --shell-dark: var(--brand-green-dark);
-  --shell-highlight: var(--bottle-orange);
+  --paper: #eef3eb;
+  --paper-sunk: #e0e9dc;
+  --card: #fbfcf9;
+  --line: #d5dfd0;
+  --ink: #172018;
+  --ink-soft: #4a564c;
+  --ink-faint: #7a877c;
+
+  --shell: #16301c;
+  --shell-dark: #0d1c12;
+  --shell-mid: #1c3a24;
+  --shell-highlight: #f0a43a;
+  --shell-text: rgba(232, 240, 230, 0.78);
+  --shell-text-strong: #f4faf2;
+  --nav-active-bg: rgba(240, 164, 58, 0.18);
+  --nav-hover-bg: rgba(255, 255, 255, 0.07);
+  --nav-active-bar: var(--shell-highlight);
+  --surface-radius: 18px;
+  --shadow: 0 2px 8px rgba(22, 48, 28, 0.07), 0 14px 32px rgba(22, 48, 28, 0.08);
+  --focus-color: #f0a43a;
 }
 
 * { box-sizing: border-box; }
@@ -57,5 +79,14 @@ body {
   text-size-adjust: 100%;
 }
 
+:root[data-visual="green"] body {
+  letter-spacing: 0.005em;
+}
+
 a { color: inherit; text-decoration: none; }
 button { font-family: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--focus-color);
+  outline-offset: 2px;
+}

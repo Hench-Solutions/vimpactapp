@@ -3,7 +3,7 @@ import { useVisual, setVisual } from '../lib/useVisual';
 
 // Review-only control - lets the two design directions be compared live
 // without two separate builds. Not part of the shipped product.
-export default function DesignToggle() {
+export default function DesignToggle({ compact = false, floating = false }) {
   const visual = useVisual();
 
   useEffect(() => {
@@ -12,12 +12,24 @@ export default function DesignToggle() {
   }, [visual]);
 
   return (
-    <div className="design-toggle">
-      <button className={visual === 'charcoal' ? 'active' : ''} onClick={() => setVisual('charcoal')}>
-        Design 1 · Classic
+    <div
+      className={`design-toggle ${compact ? 'compact' : ''} ${floating ? 'floating' : ''}`}
+      role="group"
+      aria-label="Visual theme"
+    >
+      <button
+        type="button"
+        className={visual === 'charcoal' ? 'active' : ''}
+        onClick={() => setVisual('charcoal')}
+      >
+        {compact ? 'Classic' : 'Classic'}
       </button>
-      <button className={visual === 'green' ? 'active' : ''} onClick={() => setVisual('green')}>
-        Design 2 · Modern
+      <button
+        type="button"
+        className={visual === 'green' ? 'active' : ''}
+        onClick={() => setVisual('green')}
+      >
+        {compact ? 'Modern' : 'Modern'}
       </button>
     </div>
   );

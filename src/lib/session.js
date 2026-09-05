@@ -9,7 +9,12 @@ export function getSession() {
 }
 
 export function startSession(user) {
-  const session = { ...user, loggedInAt: new Date().toISOString() };
+  // Login payload uses `name`; keep `username` as an alias so older UI paths still resolve.
+  const session = {
+    ...user,
+    username: user.username || user.name,
+    loggedInAt: new Date().toISOString(),
+  };
   localStorage.setItem(SESSION_KEY, JSON.stringify(session));
   return session;
 }

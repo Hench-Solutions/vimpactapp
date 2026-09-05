@@ -5,24 +5,37 @@ import TopNav from './TopNav';
 import { isLoggedIn } from '../../lib/session';
 
 const MOBILE_BP = 860;
+const MOBILE_MQ = `(max-width: ${MOBILE_BP}px)`;
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia(MOBILE_MQ).matches : false,
+  );
+
+  useEffect(() => {
+    const mql = window.matchMedia(MOBILE_MQ);
+    const sync = () => setIsMobile(mql.matches);
+    sync();
+    mql.addEventListener('change', sync);
+    window.addEventListener('resize', sync);
+    return () => {
+      mql.removeEventListener('change', sync);
+      window.removeEventListener('resize', sync);
+    };
+  }, []);
+
+  return isMobile;
+}
 
 export default function Layout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(
-    typeof window !== 'undefined' ? window.innerWidth <= MOBILE_BP : false,
-  );
+  const isMobile = useIsMobile();
   const location = useLocation();
 
   useEffect(() => {
-    function onResize() {
-      const mobile = window.innerWidth <= MOBILE_BP;
-      setIsMobile(mobile);
-      if (!mobile) setMobileOpen(false);
-    }
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
+    if (!isMobile) setMobileOpen(false);
+  }, [isMobile]);
 
   // Close drawer on route change (mobile nav).
   useEffect(() => {
@@ -52,7 +65,12 @@ export default function Layout() {
         onNavigate={() => setMobileOpen(false)}
       />
       <div className={`main-content ${!isMobile && collapsed ? 'collapsed' : ''}`}>
-        <TopNav collapsed={!isMobile && collapsed} onToggle={handleToggle} isMobile={isMobile} />
+        <TopNav
+          collapsed={!isMobile && collapsed}
+          onToggle={handleToggle}
+          isMobile={isMobile}
+          mobileOpen={mobileOpen}
+        />
         <main className="page-content">
           <Outlet />
         </main>

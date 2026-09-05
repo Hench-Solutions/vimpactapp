@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { startSession } from '../../lib/session';
 import { loginUser } from '../../lib/api';
 import { useVisual } from '../../lib/useVisual';
+import DesignToggle from '../../components/DesignToggle';
 import logo from '../../assets/vimpact-logo.png';
 
 export default function Login() {
@@ -36,23 +37,17 @@ export default function Login() {
     }
   }
 
-  return visual === 'green'
-    ? (
-      <ModernLogin
-        username={username} setUsername={setUsername}
-        password={password} setPassword={setPassword}
-        showPass={showPass} setShowPass={setShowPass}
-        errors={errors} formError={formError} loading={loading} onSubmit={handleSubmit}
-      />
-    )
-    : (
-      <ClassicLogin
-        username={username} setUsername={setUsername}
-        password={password} setPassword={setPassword}
-        showPass={showPass} setShowPass={setShowPass}
-        errors={errors} formError={formError} loading={loading} onSubmit={handleSubmit}
-      />
-    );
+  const formProps = {
+    username, setUsername, password, setPassword,
+    showPass, setShowPass, errors, formError, loading, onSubmit: handleSubmit,
+  };
+
+  return (
+    <>
+      <DesignToggle floating />
+      {visual === 'green' ? <ModernLogin {...formProps} /> : <ClassicLogin {...formProps} />}
+    </>
+  );
 }
 
 // ───────────────────────── Design 1 · Classic ─────────────────────────
