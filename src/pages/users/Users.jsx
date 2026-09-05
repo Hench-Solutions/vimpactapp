@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchUserList, addUser, updateUser } from '../../lib/api';
+import { MobileCardSkeleton, TableSkeleton } from '../../components/LoadingState';
 
 const ROLES = [
   { value: 'Admin', label: 'Admin' },
@@ -159,8 +160,14 @@ export default function Users() {
         <button type="button" className="table-search-btn" onClick={() => setModalUser(null)}>+ Add User</button>
       </div>
 
-      {loading && <p className="tag-modal-sub">Loading…</p>}
-      {error && <p className="tag-modal-sub" style={{ color: 'var(--crit)' }}>{error}</p>}
+      {error && <p className="page-banner page-banner-error">{error}</p>}
+
+      {loading && (
+        <>
+          <TableSkeleton columns={7} rows={6} />
+          <MobileCardSkeleton cards={3} />
+        </>
+      )}
 
       {!loading && !error && (
         <>
@@ -168,28 +175,28 @@ export default function Users() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>S. No.</th>
+                  <th className="col-sno">S. No.</th>
                   <th>Name</th>
                   <th>Mobile</th>
                   <th>Role</th>
                   <th>Gate</th>
                   <th>Designation</th>
-                  <th>Action</th>
+                  <th className="col-action">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.length === 0 && (
-                  <tr><td colSpan={7} className="tag-modal-sub" style={{ padding: 20 }}>No users yet.</td></tr>
+                  <tr><td colSpan={7} className="table-empty">No users yet.</td></tr>
                 )}
                 {rows.map((row, i) => (
                   <tr key={row.userId}>
-                    <td>{i + 1}</td>
+                    <td className="col-sno">{i + 1}</td>
                     <td>{row.name}</td>
                     <td className="mono">{row.mobile}</td>
                     <td>{ROLES.find((r) => r.value === row.role)?.label || row.role}</td>
                     <td>{row.gateName || '—'}</td>
                     <td>{row.designation || '—'}</td>
-                    <td>
+                    <td className="col-action">
                       <button type="button" className="table-action-btn" onClick={() => setModalUser(row)}>Edit</button>
                     </td>
                   </tr>
@@ -200,7 +207,7 @@ export default function Users() {
 
           <div className="mobile-card-list">
             {rows.length === 0 && (
-              <p className="tag-modal-sub" style={{ padding: 16, textAlign: 'center' }}>No users yet.</p>
+              <p className="table-empty">No users yet.</p>
             )}
             {rows.map((row, i) => (
               <article className="mobile-card" key={row.userId}>

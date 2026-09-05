@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { fetchGatePassPhotos, runGatePassOcr, saveGatePassInvoice } from '../../lib/api';
+import { PaneLoader } from '../../components/LoadingState';
 
 function formatDateTime(iso) {
   if (!iso) return '—';
@@ -16,6 +17,26 @@ const OCR_BANNER = {
   pending: null,
 };
 
+function DocEmptyState({ title, detail, onRetry }) {
+  return (
+    <div className="gpd-doc-state" role="status">
+      <div className="gpd-doc-state-icon" aria-hidden="true">
+        <svg viewBox="0 0 48 48" width="40" height="40" fill="none">
+          <rect x="10" y="6" width="28" height="36" rx="3" stroke="currentColor" strokeWidth="2" />
+          <path d="M16 16h16M16 22h12M16 28h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      </div>
+      <p className="gpd-doc-state-title">{title}</p>
+      {detail && <p className="gpd-doc-state-detail">{detail}</p>}
+      {onRetry && (
+        <button type="button" className="gpd-doc-retry" onClick={onRetry}>
+          Try again
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function GatePassDetail() {
   const { gatePassId } = useParams();
   const navigate = useNavigate();
@@ -27,6 +48,9 @@ export default function GatePassDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [lightbox, setLightbox] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
+  const [imgRetry, setImgRetry] = useState(0);
+  const [lightboxFailed, setLightboxFailed] = useState(false);
 
   const [invoice, setInvoice] = useState({
     invoiceNo: row?.invoiceNo || '',
@@ -40,18 +64,55 @@ export default function GatePassDetail() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  function loadPhotos() {
+    setLoading(true);
+    setError('');
+    setImgFailed(false);
+    return fetchGatePassPhotos(gatePassId)
+      .then((list) => {
+        setPhotos(list);
+        setActiveIdx(0);
+      })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError('');
+    setImgFailed(false);
     fetchGatePassPhotos(gatePassId)
-      .then((list) => { if (!cancelled) { setPhotos(list); setActiveIdx(0); } })
+      .then((list) => {
+        if (!cancelled) {
+          setPhotos(list);
+          setActiveIdx(0);
+        }
+      })
       .catch((err) => { if (!cancelled) setError(err.message); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [gatePassId]);
 
   const activePhoto = photos[activeIdx];
+
+  useEffect(() => {
+    setImgFailed(false);
+    setLightboxFailed(false);
+  }, [activeIdx, activePhoto?.url, imgRetry]);
+
+  function retryImage() {
+    setImgFailed(false);
+    setLightboxFailed(false);
+    setImgRetry((n) => n + 1);
+  }
+
+  function photoSrc(url) {
+    if (!url) return '';
+    if (imgRetry === 0) return url;
+    const sep = url.includes('?') ? '&' : '?';
+    return `${url}${sep}_r=${imgRetry}`;
+  }
 
   async function handleRunOcr() {
     setOcrRunning(true);
@@ -106,11 +167,21 @@ export default function GatePassDetail() {
 
       <div className="gpd-layout">
         <div className="gpd-left">
-          {loading && <p className="tag-modal-sub">Loading documents…</p>}
-          {error && <p className="tag-modal-sub" style={{ color: 'var(--crit)' }}>{error}</p>}
+          {loading && <PaneLoader label="Loading documents…" />}
+
+          {!loading && error && (
+            <DocEmptyState
+              title="Couldn’t load documents"
+              detail={error}
+              onRetry={loadPhotos}
+            />
+          )}
 
           {!loading && !error && photos.length === 0 && (
-            <p className="tag-modal-sub">No documents uploaded for this gate pass.</p>
+            <DocEmptyState
+              title="No documents"
+              detail="Nothing was uploaded for this gate pass."
+            />
           )}
 
           {!loading && !error && photos.length > 0 && (
@@ -128,10 +199,24 @@ export default function GatePassDetail() {
                 ))}
               </div>
 
-              <button type="button" className="gpd-preview" onClick={() => setLightbox(true)}>
-                <img src={activePhoto.url} alt={`Document ${activeIdx + 1}`} style={{ maxWidth: '100%', borderRadius: 8 }} />
-                <span className="gpd-preview-hint">Click to view full size</span>
-              </button>
+              {imgFailed || !activePhoto?.url ? (
+                <DocEmptyState
+                  title="Image unavailable"
+                  detail="This document couldn’t be loaded. Check the link or try again."
+                  onRetry={activePhoto?.url ? retryImage : undefined}
+                />
+              ) : (
+                <button type="button" className="gpd-preview" onClick={() => setLightbox(true)}>
+                  <img
+                    key={`${activePhoto.photoId}-${imgRetry}`}
+                    src={photoSrc(activePhoto.url)}
+                    alt={`Document ${activeIdx + 1}`}
+                    className="gpd-preview-img"
+                    onError={() => setImgFailed(true)}
+                  />
+                  <span className="gpd-preview-hint">Click to view full size</span>
+                </button>
+              )}
             </>
           )}
         </div>
@@ -184,7 +269,24 @@ export default function GatePassDetail() {
       {lightbox && activePhoto && (
         <div className="gpd-lightbox" onClick={() => setLightbox(false)}>
           <div className="gpd-lightbox-inner" onClick={(e) => e.stopPropagation()}>
-            <img src={activePhoto.url} alt={`Document ${activeIdx + 1} full size`} style={{ maxWidth: '100%', maxHeight: '100%' }} />
+            {lightboxFailed || imgFailed || !activePhoto.url ? (
+              <DocEmptyState
+                title="Image unavailable"
+                detail="Full-size preview couldn’t be loaded."
+                onRetry={() => {
+                  retryImage();
+                  setLightboxFailed(false);
+                }}
+              />
+            ) : (
+              <img
+                key={`lb-${activePhoto.photoId}-${imgRetry}`}
+                src={photoSrc(activePhoto.url)}
+                alt={`Document ${activeIdx + 1} full size`}
+                className="gpd-lightbox-img"
+                onError={() => setLightboxFailed(true)}
+              />
+            )}
           </div>
           <button className="gpd-lightbox-close" onClick={() => setLightbox(false)} aria-label="Close">✕</button>
         </div>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchAllGatePasses } from '../../lib/api';
+import { MobileCardSkeleton, TableSkeleton } from '../../components/LoadingState';
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -54,38 +55,46 @@ export default function AllEntries() {
           <span>To Date</span>
           <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
         </label>
-        <button type="button" className="table-search-btn" onClick={load}>Refresh</button>
+        <button type="button" className="table-search-btn" onClick={load} disabled={loading}>
+          {loading ? 'Refreshing…' : 'Refresh'}
+        </button>
       </div>
 
-      {loading && <p className="tag-modal-sub">Loading…</p>}
-      {error && <p className="tag-modal-sub" style={{ color: 'var(--crit)' }}>{error}</p>}
+      {error && <p className="page-banner page-banner-error">{error}</p>}
+
+      {loading && (
+        <>
+          <TableSkeleton columns={6} rows={6} />
+          <MobileCardSkeleton cards={3} />
+        </>
+      )}
 
       {!loading && !error && (
         <>
           <div className="table-wrap table-desktop">
-            <table className="data-table">
+            <table className="data-table gp-entries-table">
               <thead>
                 <tr>
-                  <th>S. No.</th>
-                  <th>Gate Pass No.</th>
-                  <th>No. of Documents</th>
-                  <th>Entry Date</th>
-                  <th>Guard Name</th>
-                  <th>Action</th>
+                  <th className="col-sno">S. No.</th>
+                  <th className="col-gp">Gate Pass No.</th>
+                  <th className="col-docs">No. of Documents</th>
+                  <th className="col-date">Entry Date</th>
+                  <th className="col-guard">Guard Name</th>
+                  <th className="col-action">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 && (
-                  <tr><td colSpan={6} className="tag-modal-sub" style={{ padding: 20 }}>No gate passes yet.</td></tr>
+                  <tr><td colSpan={6} className="table-empty">No gate passes yet.</td></tr>
                 )}
                 {filtered.map((row, i) => (
                   <tr key={row.gatePassId}>
-                    <td>{i + 1}</td>
-                    <td className="mono">{row.gatePassNo}</td>
-                    <td className="num">{row.photoCount}</td>
-                    <td>{formatDate(row.createdAt)}</td>
-                    <td>{row.guardName}</td>
-                    <td>
+                    <td className="col-sno">{i + 1}</td>
+                    <td className="mono col-gp">{row.gatePassNo}</td>
+                    <td className="col-docs">{row.photoCount}</td>
+                    <td className="col-date">{formatDate(row.createdAt)}</td>
+                    <td className="col-guard">{row.guardName}</td>
+                    <td className="col-action">
                       <button type="button" className="table-action-btn" onClick={() => openDetail(row)}>
                         View
                       </button>
@@ -98,7 +107,7 @@ export default function AllEntries() {
 
           <div className="mobile-card-list">
             {filtered.length === 0 && (
-              <p className="tag-modal-sub" style={{ padding: 16, textAlign: 'center' }}>No gate passes yet.</p>
+              <p className="table-empty">No gate passes yet.</p>
             )}
             {filtered.map((row, i) => (
               <article className="mobile-card" key={row.gatePassId}>

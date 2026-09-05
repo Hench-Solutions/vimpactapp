@@ -27,6 +27,9 @@
   --crit-soft: #d43a2c20;
 
   --shadow: 0 2px 6px rgba(30, 42, 34, 0.06), 0 10px 24px rgba(30, 42, 34, 0.07);
+  --table-head-bg: #d9ddd8;
+  --table-head-ink: #2e312f;
+  --table-head-line: #c5cac3;
   --sidebar-w: 250px;
   --sidebar-w-collapsed: 76px;
   --topbar-h: 60px;
@@ -52,6 +55,9 @@
   --ink: #172018;
   --ink-soft: #4a564c;
   --ink-faint: #7a877c;
+  --table-head-bg: #cfe0c6;
+  --table-head-ink: #1a2a1e;
+  --table-head-line: #b4c9aa;
 
   --shell: #16301c;
   --shell-dark: #0d1c12;
