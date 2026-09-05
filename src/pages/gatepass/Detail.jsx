@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { fetchGatePassPhotos, runGatePassOcr, saveGatePassInvoice } from '../../lib/api';
 import { PaneLoader } from '../../components/LoadingState';
+import { AlertIcon, CheckIcon, CloseIcon, SearchIcon } from '../../components/Icons';
 
 function formatDateTime(iso) {
   if (!iso) return '—';
@@ -11,9 +12,9 @@ function formatDateTime(iso) {
 }
 
 const OCR_BANNER = {
-  ok:     { cls: 'ok',      text: '✓ Filled automatically from OCR — check before saving.' },
-  failed: { cls: 'failed',  text: '⚠ OCR could not read this document — please enter the details manually.' },
-  manual: { cls: 'ok',      text: '✓ Saved manually.' },
+  ok:     { cls: 'ok',      Icon: CheckIcon, text: 'Filled automatically from OCR — check before saving.' },
+  failed: { cls: 'failed',  Icon: AlertIcon, text: 'OCR could not read this document — please enter the details manually.' },
+  manual: { cls: 'ok',      Icon: CheckIcon, text: 'Saved manually.' },
   pending: null,
 };
 
@@ -235,11 +236,21 @@ export default function GatePassDetail() {
             <input type="text" value={formatDateTime(row?.createdAt)} readOnly className="gpd-readonly" />
           </div>
 
-          <button type="button" className="table-search-btn" onClick={handleRunOcr} disabled={ocrRunning || photos.length === 0} style={{ marginBottom: 8 }}>
-            {ocrRunning ? 'Reading document…' : '🔍 Run OCR'}
+          <button type="button" className="table-search-btn btn-with-icon" onClick={handleRunOcr} disabled={ocrRunning || photos.length === 0} style={{ marginBottom: 8 }}>
+            {ocrRunning ? 'Reading document…' : (
+              <>
+                <SearchIcon size={16} />
+                Run OCR
+              </>
+            )}
           </button>
 
-          {banner && <div className={`gpd-ocr-banner ${banner.cls}`}>{banner.text}</div>}
+          {banner && (
+            <div className={`gpd-ocr-banner ${banner.cls}`}>
+              <banner.Icon size={15} className="gpd-ocr-banner-icon" />
+              <span>{banner.text}</span>
+            </div>
+          )}
 
           <div className="gpd-field">
             <span>Invoice No.</span>
@@ -260,8 +271,13 @@ export default function GatePassDetail() {
 
           {formError && <p className="login-field" style={{ color: 'var(--crit)' }}>{formError}</p>}
 
-          <button type="submit" className="gpd-save" disabled={saving}>
-            {saving ? 'Saving…' : saved ? 'Saved ✓' : 'SAVE'}
+          <button type="submit" className="gpd-save btn-with-icon" disabled={saving}>
+            {saving ? 'Saving…' : saved ? (
+              <>
+                <CheckIcon size={16} />
+                Saved
+              </>
+            ) : 'SAVE'}
           </button>
         </form>
       </div>
@@ -288,7 +304,9 @@ export default function GatePassDetail() {
               />
             )}
           </div>
-          <button className="gpd-lightbox-close" onClick={() => setLightbox(false)} aria-label="Close">✕</button>
+          <button className="gpd-lightbox-close" onClick={() => setLightbox(false)} aria-label="Close">
+            <CloseIcon size={18} />
+          </button>
         </div>
       )}
     </div>

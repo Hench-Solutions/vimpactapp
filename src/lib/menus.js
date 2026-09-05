@@ -1,10 +1,4 @@
-// UI-only stand-in for what will eventually come from the CareAi-style
-// User / Page / Group tables (Modules -> Pages -> Role-Page mapping).
-// Nothing here touches a database - it exists purely so the Sidebar can
-// be shown actually changing shape per role before that wiring exists.
-// Keys match the Role values the API returns (Users module) - "Guard"
-// never actually reaches here since guards can't log into vimpactapp.
-
+// Client-side role → sidebar menu until the API serves menus.
 const MENUS = {
   Admin: [
     { pageId: 'dash', section: 'Dashboard', pageUrl: '/dashboard', items: [] },

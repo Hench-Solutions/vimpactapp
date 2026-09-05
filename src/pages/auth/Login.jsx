@@ -4,6 +4,7 @@ import { startSession } from '../../lib/session';
 import { loginUser } from '../../lib/api';
 import { useVisual } from '../../lib/useVisual';
 import DesignToggle from '../../components/DesignToggle';
+import { ArrowRightIcon, EyeIcon, EyeOffIcon } from '../../components/Icons';
 import logo from '../../assets/vimpact-logo.png';
 
 export default function Login() {
@@ -50,7 +51,6 @@ export default function Login() {
   );
 }
 
-// ───────────────────────── Design 1 · Classic ─────────────────────────
 function ClassicLogin({ username, setUsername, password, setPassword, showPass, setShowPass, errors, formError, loading, onSubmit }) {
   return (
     <div className="login-page">
@@ -95,7 +95,6 @@ function ClassicLogin({ username, setUsername, password, setPassword, showPass, 
   );
 }
 
-// ───────────────────────── Design 2 · Modern ─────────────────────────
 function ModernLogin({ username, setUsername, password, setPassword, showPass, setShowPass, errors, formError, loading, onSubmit }) {
   return (
     <div className="mlogin-page">
@@ -133,14 +132,21 @@ function ModernLogin({ username, setUsername, password, setPassword, showPass, s
           />
           <label htmlFor="mlogin-pass">Password</label>
           <button type="button" className="mlogin-eye" onClick={() => setShowPass((p) => !p)} aria-label="Toggle password visibility">
-            {showPass ? '🙈' : '👁'}
+            {showPass ? <EyeOffIcon size={18} /> : <EyeIcon size={18} />}
           </button>
           {errors.password && <em>{errors.password}</em>}
         </div>
 
         {formError && <em style={{ display: 'block', marginBottom: 12 }}>{formError}</em>}
 
-        <button type="submit" className="mlogin-submit" disabled={loading}>{loading ? 'Signing in…' : 'Log In →'}</button>
+        <button type="submit" className="mlogin-submit" disabled={loading}>
+          {loading ? 'Signing in…' : (
+            <>
+              Log In
+              <ArrowRightIcon size={16} />
+            </>
+          )}
+        </button>
         <p className="mlogin-footer">© {new Date().getFullYear()} Vimpact Care Pvt. Ltd.</p>
       </form>
     </div>

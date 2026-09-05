@@ -3,9 +3,6 @@ import { useEffect, useState } from 'react';
 const KEY = 'vimpactapp:visual';
 const EVENT = 'vimpactapp:visualchange';
 
-// Shared across components without a full context - DesignToggle writes
-// to localStorage + fires this event, anything else (Login) can react
-// live instead of only picking it up on next mount.
 export function setVisual(value) {
   localStorage.setItem(KEY, value);
   window.dispatchEvent(new Event(EVENT));

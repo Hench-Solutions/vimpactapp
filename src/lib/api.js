@@ -1,8 +1,3 @@
-// Everything that talks to the real middleware (VimpactCareApi) lives
-// behind this one module, same convention as guard-pwa/src/lib/api.js.
-// The Users endpoints don't require a token yet - this stage is
-// capture-and-view only, no login/JWT wiring for vimpactapp itself.
-
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 async function unwrap(res) {
@@ -40,7 +35,6 @@ export async function fetchUserList() {
 }
 
 export async function addUser(fields) {
-  // fields: { Name, Mobile, Role, GateName?, Designation? }
   return postJson('/v1/User', { Mode: 'Add', ...fields });
 }
 
@@ -49,14 +43,16 @@ export async function updateUser(userId, fields) {
 }
 
 export async function loginUser(username, password) {
-  // -> { userId, name, role, email, gateName, designation }
   return postJson('/v1/User', { Mode: 'Login', Username: username, Password: password });
 }
 
-// Server photo paths come back as "/gatepass/{no}/{file}" — same
-// convention as guard-pwa's resolvePhotoUrl.
+/** Server paths are "/gatepass/{no}/{file}"; absolute URLs pass through. */
 export function resolvePhotoUrl(relativePath) {
-  return relativePath ? `${API_BASE}${relativePath}` : null;
+  if (!relativePath) return null;
+  if (/^https?:\/\//i.test(relativePath)) return relativePath;
+  const base = API_BASE.replace(/\/+$/, '');
+  const pathPart = relativePath.startsWith('/') ? relativePath : `/${relativePath}`;
+  return `${base}${pathPart}`;
 }
 
 export async function fetchAllGatePasses() {
@@ -83,11 +79,9 @@ export async function fetchGatePassPhotos(gatePassId) {
 }
 
 export async function runGatePassOcr(gatePassId) {
-  // -> { gatePassId, invoiceNo, invoiceDate, vendorName, amount, ocrStatus }
   return postJson('/v1/GatePass/ocr', { GatePassId: gatePassId });
 }
 
 export async function saveGatePassInvoice(gatePassId, fields) {
-  // fields: { InvoiceNo?, InvoiceDate?, VendorName?, Amount? }
   return postJson('/v1/GatePass/invoice', { GatePassId: gatePassId, ...fields });
 }

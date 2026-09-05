@@ -1,5 +1,3 @@
-/** Shared loading UI — skeleton rows for lists, pane placeholder for detail. */
-
 export function TableSkeleton({ columns = 6, rows = 5 }) {
   return (
     <div className="table-wrap table-desktop" aria-busy="true" aria-label="Loading">

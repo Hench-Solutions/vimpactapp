@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getSession, clearSession } from '../../lib/session';
 import DesignToggle from '../DesignToggle';
+import { BellIcon, ChevronDownIcon, MenuIcon } from '../Icons';
 
 const BREADCRUMB = {
   '/dashboard': 'Dashboard',
@@ -13,7 +14,6 @@ const BREADCRUMB = {
 };
 
 function displayName(session) {
-  // Login API returns `name`; older mocks used `username`.
   return session?.name || session?.username || '';
 }
 
@@ -49,7 +49,7 @@ export default function TopNav({ collapsed, onToggle, isMobile, mobileOpen }) {
         aria-label={isMobile ? (mobileOpen ? 'Close menu' : 'Open menu') : 'Toggle sidebar'}
         aria-expanded={isMobile ? mobileOpen : !collapsed}
       >
-        ☰
+        <MenuIcon size={20} />
       </button>
 
       <div className="topnav-crumb">
@@ -61,7 +61,8 @@ export default function TopNav({ collapsed, onToggle, isMobile, mobileOpen }) {
         <DesignToggle compact />
         <span className="topnav-sep" aria-hidden="true" />
         <button type="button" className="topnav-icon" aria-label="Notifications">
-          🔔<span className="topnav-badge">3</span>
+          <BellIcon size={18} />
+          <span className="topnav-badge">3</span>
         </button>
 
         <div
@@ -83,7 +84,7 @@ export default function TopNav({ collapsed, onToggle, isMobile, mobileOpen }) {
           <div className="topnav-avatar" aria-hidden="true">{initial}</div>
           <span className="topnav-name">{name || 'User'}</span>
           {session?.role && <span className="topnav-role-chip">{session.role}</span>}
-          <span className="topnav-caret" aria-hidden="true">▾</span>
+          <span className="topnav-caret" aria-hidden="true"><ChevronDownIcon size={14} /></span>
 
           {open && (
             <div className="topnav-dropdown" role="menu">

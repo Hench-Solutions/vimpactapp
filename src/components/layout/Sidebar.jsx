@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { getSession, clearSession } from '../../lib/session';
-import { getMenuForRole } from '../../lib/mockData';
+import { getMenuForRole } from '../../lib/menus';
 import logo from '../../assets/vimpact-logo.png';
+import { LogoutIcon } from '../Icons';
 
 function pathMatches(pathname, target) {
   if (!target) return false;
   if (pathname === target) return true;
-  // Only treat as prefix when the next char is '/', so /users ≠ /usersX
-  // and /users does not steal highlight from /users/roles via loose startsWith alone.
+  // Prefix match only on path segment boundary (/users ≠ /usersX).
   return pathname.startsWith(`${target}/`);
 }
 
@@ -120,7 +120,7 @@ export default function Sidebar({ collapsed, mobileOpen, onNavigate }) {
       </nav>
 
       <button type="button" className="sidebar-logout" onClick={handleLogout}>
-        <span aria-hidden="true">⎋</span>
+        <LogoutIcon size={16} />
         {!collapsed && <span className="sidebar-link-text">Log out</span>}
       </button>
     </aside>

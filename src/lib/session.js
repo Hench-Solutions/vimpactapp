@@ -1,6 +1,3 @@
-// Session shape now comes from the real /v1/User Login response instead of
-// the picked-role stand-in - see lib/api.js loginUser().
-
 const SESSION_KEY = 'vimpactapp:session';
 
 export function getSession() {
@@ -9,7 +6,7 @@ export function getSession() {
 }
 
 export function startSession(user) {
-  // Login payload uses `name`; keep `username` as an alias so older UI paths still resolve.
+  // Login returns `name`; keep `username` alias for older UI paths.
   const session = {
     ...user,
     username: user.username || user.name,

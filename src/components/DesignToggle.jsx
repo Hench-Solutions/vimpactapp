@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 import { useVisual, setVisual } from '../lib/useVisual';
 
-// Review-only control - lets the two design directions be compared live
-// without two separate builds. Not part of the shipped product.
+// Review-only theme toggle (not shipped product).
 export default function DesignToggle({ compact = false, floating = false }) {
   const visual = useVisual();
 

@@ -37,7 +37,6 @@ export default function Layout() {
     if (!isMobile) setMobileOpen(false);
   }, [isMobile]);
 
-  // Close drawer on route change (mobile nav).
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
