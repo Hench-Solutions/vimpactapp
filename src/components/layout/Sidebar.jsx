@@ -4,7 +4,7 @@ import { getSession, clearSession } from '../../lib/session';
 import { getMenuForRole } from '../../lib/mockData';
 import logo from '../../assets/vimpact-logo.png';
 
-export default function Sidebar({ collapsed }) {
+export default function Sidebar({ collapsed, mobileOpen, onNavigate }) {
   const [openSection, setOpenSection] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
@@ -28,12 +28,19 @@ export default function Sidebar({ collapsed }) {
 
   function handleSectionClick(section) {
     const direct = section.items.length === 0 && section.pageUrl;
-    if (direct) navigate(section.pageUrl);
-    else setOpenSection((prev) => (prev === section.pageId ? null : section.pageId));
+    if (direct) {
+      navigate(section.pageUrl);
+      onNavigate?.();
+    } else {
+      setOpenSection((prev) => (prev === section.pageId ? null : section.pageId));
+    }
   }
 
   return (
-    <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
+    <aside
+      className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}
+      aria-hidden={mobileOpen === false && undefined}
+    >
       <div className="sidebar-brand">
         <img src={logo} alt="Vimpact Care" className="sidebar-logo" />
         {!collapsed && <span className="sidebar-brand-text">Vimpact App</span>}
@@ -50,6 +57,14 @@ export default function Sidebar({ collapsed }) {
               <div
                 className={`sidebar-title ${isOpen || isDirectActive ? 'open' : ''}`}
                 onClick={() => handleSectionClick(section)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleSectionClick(section);
+                  }
+                }}
               >
                 <span>{section.section}</span>
                 {!isDirect && <i className={`chev ${isOpen ? 'rot' : ''}`}>›</i>}
@@ -62,6 +77,7 @@ export default function Sidebar({ collapsed }) {
                       key={item.pageId}
                       to={item.pageUrl}
                       className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                      onClick={() => onNavigate?.()}
                     >
                       <span className="dot" />
                       <span className="sidebar-link-text">{item.pageTitle}</span>

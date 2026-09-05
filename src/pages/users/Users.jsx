@@ -163,39 +163,64 @@ export default function Users() {
       {error && <p className="tag-modal-sub" style={{ color: 'var(--crit)' }}>{error}</p>}
 
       {!loading && !error && (
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>S. No.</th>
-                <th>Name</th>
-                <th>Mobile</th>
-                <th>Role</th>
-                <th>Gate</th>
-                <th>Designation</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.length === 0 && (
-                <tr><td colSpan={7} className="tag-modal-sub" style={{ padding: 20 }}>No users yet.</td></tr>
-              )}
-              {rows.map((row, i) => (
-                <tr key={row.userId}>
-                  <td>{i + 1}</td>
-                  <td>{row.name}</td>
-                  <td className="mono">{row.mobile}</td>
-                  <td>{ROLES.find((r) => r.value === row.role)?.label || row.role}</td>
-                  <td>{row.gateName || '—'}</td>
-                  <td>{row.designation || '—'}</td>
-                  <td>
-                    <button type="button" className="table-action-btn" onClick={() => setModalUser(row)}>Edit</button>
-                  </td>
+        <>
+          <div className="table-wrap table-desktop">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>S. No.</th>
+                  <th>Name</th>
+                  <th>Mobile</th>
+                  <th>Role</th>
+                  <th>Gate</th>
+                  <th>Designation</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {rows.length === 0 && (
+                  <tr><td colSpan={7} className="tag-modal-sub" style={{ padding: 20 }}>No users yet.</td></tr>
+                )}
+                {rows.map((row, i) => (
+                  <tr key={row.userId}>
+                    <td>{i + 1}</td>
+                    <td>{row.name}</td>
+                    <td className="mono">{row.mobile}</td>
+                    <td>{ROLES.find((r) => r.value === row.role)?.label || row.role}</td>
+                    <td>{row.gateName || '—'}</td>
+                    <td>{row.designation || '—'}</td>
+                    <td>
+                      <button type="button" className="table-action-btn" onClick={() => setModalUser(row)}>Edit</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mobile-card-list">
+            {rows.length === 0 && (
+              <p className="tag-modal-sub" style={{ padding: 16, textAlign: 'center' }}>No users yet.</p>
+            )}
+            {rows.map((row, i) => (
+              <article className="mobile-card" key={row.userId}>
+                <div className="mobile-card-top">
+                  <span className="mobile-card-index">#{i + 1}</span>
+                  <strong className="mobile-card-id">{row.name}</strong>
+                </div>
+                <dl className="mobile-card-meta">
+                  <div><dt>Mobile</dt><dd className="mono">{row.mobile}</dd></div>
+                  <div><dt>Role</dt><dd>{ROLES.find((r) => r.value === row.role)?.label || row.role}</dd></div>
+                  <div><dt>Gate</dt><dd>{row.gateName || '—'}</dd></div>
+                  <div><dt>Designation</dt><dd>{row.designation || '—'}</dd></div>
+                </dl>
+                <button type="button" className="table-action-btn mobile-card-action" onClick={() => setModalUser(row)}>
+                  Edit
+                </button>
+              </article>
+            ))}
+          </div>
+        </>
       )}
 
       {modalUser !== undefined && (

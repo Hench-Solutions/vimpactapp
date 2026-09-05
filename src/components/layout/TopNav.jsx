@@ -11,12 +11,13 @@ const BREADCRUMB = {
   '/reports/mis': 'Reports · MIS',
 };
 
-export default function TopNav({ collapsed, onToggle }) {
+export default function TopNav({ collapsed, onToggle, isMobile }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
   const session = getSession();
+  const crumb = BREADCRUMB[location.pathname] || 'Vimpact App';
 
   useEffect(() => {
     function onClick(e) {
@@ -33,12 +34,17 @@ export default function TopNav({ collapsed, onToggle }) {
 
   return (
     <header className={`topnav ${collapsed ? 'collapsed' : ''}`}>
-      <button className="topnav-toggle" onClick={onToggle} aria-label="Toggle sidebar">
+      <button
+        className="topnav-toggle"
+        onClick={onToggle}
+        aria-label={isMobile ? 'Open menu' : 'Toggle sidebar'}
+      >
         ☰
       </button>
 
       <div className="topnav-crumb">
-        <span>Home</span> / <strong>{BREADCRUMB[location.pathname] || 'Vimpact App'}</strong>
+        {!isMobile && <span>Home / </span>}
+        <strong>{isMobile ? crumb.split(' · ').pop() : crumb}</strong>
       </div>
 
       <div className="topnav-right">

@@ -39,6 +39,10 @@ export default function AllEntries() {
     });
   }, [rows, fromDate, toDate]);
 
+  function openDetail(row) {
+    navigate(`/gatepass/detail/${row.gatePassId}`, { state: row });
+  }
+
   return (
     <div className="table-page">
       <div className="table-toolbar">
@@ -57,43 +61,63 @@ export default function AllEntries() {
       {error && <p className="tag-modal-sub" style={{ color: 'var(--crit)' }}>{error}</p>}
 
       {!loading && !error && (
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>S. No.</th>
-                <th>Gate Pass No.</th>
-                <th>No. of Documents</th>
-                <th>Entry Date</th>
-                <th>Guard Name</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.length === 0 && (
-                <tr><td colSpan={6} className="tag-modal-sub" style={{ padding: 20 }}>No gate passes yet.</td></tr>
-              )}
-              {filtered.map((row, i) => (
-                <tr key={row.gatePassId}>
-                  <td>{i + 1}</td>
-                  <td className="mono">{row.gatePassNo}</td>
-                  <td className="num">{row.photoCount}</td>
-                  <td>{formatDate(row.createdAt)}</td>
-                  <td>{row.guardName}</td>
-                  <td>
-                    <button
-                      type="button"
-                      className="table-action-btn"
-                      onClick={() => navigate(`/gatepass/detail/${row.gatePassId}`, { state: row })}
-                    >
-                      View
-                    </button>
-                  </td>
+        <>
+          <div className="table-wrap table-desktop">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>S. No.</th>
+                  <th>Gate Pass No.</th>
+                  <th>No. of Documents</th>
+                  <th>Entry Date</th>
+                  <th>Guard Name</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filtered.length === 0 && (
+                  <tr><td colSpan={6} className="tag-modal-sub" style={{ padding: 20 }}>No gate passes yet.</td></tr>
+                )}
+                {filtered.map((row, i) => (
+                  <tr key={row.gatePassId}>
+                    <td>{i + 1}</td>
+                    <td className="mono">{row.gatePassNo}</td>
+                    <td className="num">{row.photoCount}</td>
+                    <td>{formatDate(row.createdAt)}</td>
+                    <td>{row.guardName}</td>
+                    <td>
+                      <button type="button" className="table-action-btn" onClick={() => openDetail(row)}>
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mobile-card-list">
+            {filtered.length === 0 && (
+              <p className="tag-modal-sub" style={{ padding: 16, textAlign: 'center' }}>No gate passes yet.</p>
+            )}
+            {filtered.map((row, i) => (
+              <article className="mobile-card" key={row.gatePassId}>
+                <div className="mobile-card-top">
+                  <span className="mobile-card-index">#{i + 1}</span>
+                  <span className="mono mobile-card-id">{row.gatePassNo}</span>
+                </div>
+                <dl className="mobile-card-meta">
+                  <div><dt>Documents</dt><dd>{row.photoCount}</dd></div>
+                  <div><dt>Entry</dt><dd>{formatDate(row.createdAt)}</dd></div>
+                  <div><dt>Guard</dt><dd>{row.guardName}</dd></div>
+                </dl>
+                <button type="button" className="table-action-btn mobile-card-action" onClick={() => openDetail(row)}>
+                  View
+                </button>
+              </article>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
