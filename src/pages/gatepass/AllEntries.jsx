@@ -28,7 +28,6 @@ export default function AllEntries() {
     }
   }
 
-  useEffect(() => { load(); }, []);
   useEffect(() => {
     // oxlint-disable-next-line react/set-state-in-effect
     load();
