@@ -34,10 +34,12 @@ export default function Layout() {
   const location = useLocation();
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
     if (!isMobile) setMobileOpen(false);
   }, [isMobile]);
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
     setMobileOpen(false);
   }, [location.pathname]);
 

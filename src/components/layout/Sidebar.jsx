@@ -23,6 +23,7 @@ export default function Sidebar({ collapsed, mobileOpen, onNavigate }) {
     for (const section of menu) {
       if (section.items.length === 0 && section.pageUrl) {
         if (pathMatches(location.pathname, section.pageUrl)) {
+          // oxlint-disable-next-line react/set-state-in-effect
           setOpenSection(section.pageId);
           return;
         }

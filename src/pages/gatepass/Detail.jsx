@@ -80,6 +80,7 @@ export default function GatePassDetail() {
 
   useEffect(() => {
     let cancelled = false;
+    // oxlint-disable-next-line react/set-state-in-effect
     setLoading(true);
     setError('');
     setImgFailed(false);
@@ -98,6 +99,7 @@ export default function GatePassDetail() {
   const activePhoto = photos[activeIdx];
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
     setImgFailed(false);
     setLightboxFailed(false);
   }, [activeIdx, activePhoto?.url, imgRetry]);

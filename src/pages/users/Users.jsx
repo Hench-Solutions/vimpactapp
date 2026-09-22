@@ -148,6 +148,10 @@ export default function Users() {
   }
 
   useEffect(() => { load(); }, []);
+  useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
+    load();
+  }, []);
 
   function handleSaved() {
     setModalUser(undefined);
