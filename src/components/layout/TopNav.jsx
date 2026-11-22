@@ -10,6 +10,7 @@ const BREADCRUMB = {
   '/gatepass/all': 'Gate Pass · All Entries',
   '/users': 'User Management · Users',
   '/users/roles': 'User Management · Roles & Pages',
+  '/dispatch/labels': 'Dispatch · Label Printing',
   '/reports/mis': 'Reports · MIS',
 };
 

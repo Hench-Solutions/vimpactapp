@@ -19,6 +19,11 @@ const MENUS = {
       ],
     },
     {
+      pageId: 'dispatch',
+      section: 'Dispatch',
+      items: [{ pageId: 'labels', pageTitle: 'Label Printing', pageUrl: '/dispatch/labels' }],
+    },
+    {
       pageId: 'reports',
       section: 'Reports',
       items: [{ pageId: 'mis', pageTitle: 'MIS Reports', pageUrl: '/reports/mis' }],
@@ -33,6 +38,11 @@ const MENUS = {
         { pageId: 'gp-review', pageTitle: 'Review Queue', pageUrl: '/gatepass/review' },
         { pageId: 'gp-all', pageTitle: 'All Entries', pageUrl: '/gatepass/all' },
       ],
+    },
+    {
+      pageId: 'dispatch',
+      section: 'Dispatch',
+      items: [{ pageId: 'labels', pageTitle: 'Label Printing', pageUrl: '/dispatch/labels' }],
     },
   ],
   Guard: [{ pageId: 'dash', section: 'Dashboard', pageUrl: '/dashboard', items: [] }],
