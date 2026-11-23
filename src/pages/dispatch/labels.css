@@ -18,9 +18,32 @@
 .lbl-stats span { font-size: 11.5px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; }
 .lbl-stats b { font-size: 22px; font-variant-numeric: tabular-nums; }
 .lbl-stats .crit b { color: var(--crit); }
+.lbl-stats small { font-size: 11.5px; color: var(--ink-faint); font-weight: 600; }
 .lbl-stats .good b { color: var(--brand-green-dark); }
 
-.lbl-main { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 18px; align-items: start; }
+/* Collapsible "Label preview & settings" section */
+.lbl-tools { display: flex; flex-direction: column; gap: 14px; }
+.lbl-tools-bar {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--card); border-radius: 14px; padding: 10px 16px 10px 8px; box-shadow: var(--shadow);
+}
+.lbl-tools-toggle {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px;
+  border: 0; background: none; padding: 6px 8px; border-radius: 9px; cursor: pointer;
+  font: inherit; color: var(--ink); text-align: left;
+}
+.lbl-tools-toggle:hover { background: var(--paper); }
+.lbl-tools-toggle:focus-visible { outline: 2px solid var(--brand-green); outline-offset: 2px; }
+.lbl-tools-chev { font-size: 20px; line-height: 1; color: var(--ink-soft); transition: transform 0.15s; width: 14px; text-align: center; }
+.lbl-tools.open .lbl-tools-chev { transform: rotate(90deg); }
+.lbl-tools-title { font-size: 14px; font-weight: 700; white-space: nowrap; }
+.lbl-tools-current {
+  font-size: 12.5px; color: var(--ink-faint); font-weight: 600;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* Preview (sized to the label) + settings side by side; table gets the full width below. */
+.lbl-top { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 18px; align-items: stretch; }
 .lbl-rows { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .lbl-toolbar { justify-content: space-between; }
 .lbl-search { flex: 1; min-width: 220px; }
@@ -38,13 +61,16 @@
 .table-search-btn:disabled,
 .table-action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.lbl-table-wrap { overflow-x: auto; }
-.lbl-table { min-width: 780px; }
+/* Vertical scroll: max-height (≈10 rows) is set from JS; the header row stays visible. */
+.lbl-table-wrap { overflow: auto; }
+.lbl-table-wrap .data-table th { position: sticky; top: 0; z-index: 2; }
+.lbl-table { min-width: 820px; }
 .lbl-table th, .lbl-table td { padding-left: 10px; padding-right: 10px; }
 .lbl-table .col-check { width: 40px; text-align: center; }
 .lbl-table .col-bill { width: 145px; white-space: nowrap; }
 .lbl-table .col-fsn { width: 145px; font-size: 12.5px; }
-.lbl-table .col-po { width: 125px; font-size: 12.5px; }
+.lbl-table .col-po { width: 260px; font-size: 12.5px; }
+.lbl-table .lbl-transporter { font-family: inherit; font-size: 11.5px; white-space: normal; }
 .lbl-table .col-boxes { width: 58px; font-variant-numeric: tabular-nums; }
 .lbl-table .col-range { width: 160px; }
 .lbl-table tbody tr { cursor: pointer; }
@@ -58,7 +84,6 @@
 .lbl-range span { font-size: 12px; color: var(--ink-faint); }
 .lbl-range.invalid input { border-color: var(--crit); }
 
-.lbl-side { display: flex; flex-direction: column; gap: 18px; }
 .lbl-card { background: var(--card); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow); }
 .lbl-card h4 { margin: 0; font-size: 14px; }
 .lbl-card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
@@ -68,17 +93,18 @@
 .lbl-preview .lbl { box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25); border-radius: 2mm; }
 .lbl-hint { margin: 10px 0 0; }
 
-.lbl-settings { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
+.lbl-settings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; align-content: start; }
+.lbl-settings h4 { grid-column: 1 / -1; }
 .lbl-settings label { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); }
-.lbl-settings > button { align-self: flex-start; }
-.lbl-offsets { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.lbl-offsets input { width: 100%; box-sizing: border-box; }
+.lbl-settings input, .lbl-settings select { width: 100%; box-sizing: border-box; }
+.lbl-offsets { display: contents; }
+.lbl-settings > button { grid-column: 1 / -1; justify-self: start; }
 
 .lbl-help summary { cursor: pointer; font-weight: 700; font-size: 14px; }
 .lbl-help ol { margin: 12px 0 0; padding-left: 20px; font-size: 13px; color: var(--ink-soft); line-height: 1.7; }
 
-@media (max-width: 1200px) {
-  .lbl-main { grid-template-columns: 1fr; }
+@media (max-width: 1000px) {
+  .lbl-top { grid-template-columns: 1fr; }
   .lbl-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 600px) {
@@ -121,3 +147,9 @@
   .label-print-root .lbl { break-after: page; page-break-after: always; }
   .label-print-root .lbl:last-child { break-after: auto; page-break-after: auto; }
 }
+.page-banner-warn { background: var(--warn-soft); color: #9a5f12; }
+.lbl-reject { display: flex; flex-direction: column; gap: 6px; }
+.lbl-reject p { margin: 0; font-weight: 600; }
+.lbl-reject ul { margin: 2px 0; padding-left: 20px; font-weight: 600; line-height: 1.6; }
+.lbl-reject .lbl-reject-hint { font-weight: 500; color: var(--ink-soft); font-size: 12.5px; }
+.lbl-reject .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; }

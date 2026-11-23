@@ -42,6 +42,11 @@ export async function updateUser(userId, fields) {
   return postJson('/v1/User', { Mode: 'Update', UserId: userId, ...fields });
 }
 
+/** Activate / deactivate a user. actingUserId lets the API refuse self-deactivation. */
+export async function setUserActive(userId, isActive, actingUserId) {
+  return postJson('/v1/User', { Mode: 'SetActive', UserId: userId, IsActive: isActive, ActingUserId: actingUserId ?? null });
+}
+
 export async function loginUser(username, password) {
   return postJson('/v1/User', { Mode: 'Login', Username: username, Password: password });
 }

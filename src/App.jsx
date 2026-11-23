@@ -7,7 +7,8 @@ import AllEntries from './pages/gatepass/AllEntries';
 import GatePassDetail from './pages/gatepass/Detail';
 import Users from './pages/users/Users';
 import ComingSoon from './pages/ComingSoon';
-import { isLoggedIn } from './lib/session';
+import { isLoggedIn, getSession } from './lib/session';
+import { homeForRole } from './lib/menus';
 import './App.css';
 
 // Lazy: pulls in the Excel reader (xlsx), which only this page needs.
@@ -28,7 +29,7 @@ export default function App() {
           <Route path="/dispatch/labels" element={<Suspense fallback={null}><LabelPrinting /></Suspense>} />
           <Route path="/reports/mis" element={<ComingSoon />} />
         </Route>
-        <Route path="*" element={<Navigate to={isLoggedIn() ? '/dashboard' : '/login'} replace />} />
+        <Route path="*" element={<Navigate to={isLoggedIn() ? homeForRole(getSession()?.role) : '/login'} replace />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { startSession } from '../../lib/session';
+import { homeForRole } from '../../lib/menus';
 import { loginUser } from '../../lib/api';
 import { useVisual } from '../../lib/useVisual';
 import DesignToggle from '../../components/DesignToggle';
@@ -30,7 +31,7 @@ export default function Login() {
     try {
       const user = await loginUser(username.trim(), password);
       startSession(user);
-      navigate('/dashboard', { replace: true });
+      navigate(homeForRole(user.role), { replace: true });
     } catch (err) {
       setFormError(err.message);
     } finally {

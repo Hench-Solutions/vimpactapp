@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
-import { fetchUserList, addUser, updateUser } from '../../lib/api';
+import { useEffect, useMemo, useState } from 'react';
+import { fetchUserList, addUser, updateUser, setUserActive } from '../../lib/api';
+import { getSession } from '../../lib/session';
 import { MobileCardSkeleton, TableSkeleton } from '../../components/LoadingState';
 
 const ROLES = [
   { value: 'Admin', label: 'Admin' },
   { value: 'OfficeStaff', label: 'Office Staff' },
+  { value: 'Despatch', label: 'Despatch' },
   { value: 'Guard', label: 'Guard' },
 ];
 
@@ -129,11 +131,68 @@ function UserFormModal({ initial, onCancel, onSaved }) {
   );
 }
 
+function StatusConfirmModal({ user, onCancel, onDone }) {
+  const activating = !user.isActive;
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  async function confirm() {
+    setError('');
+    setSaving(true);
+    try {
+      await setUserActive(user.userId, activating, getSession()?.userId);
+      onDone();
+    } catch (err) {
+      setError(err.message);
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="tag-modal-overlay" onClick={saving ? undefined : onCancel}>
+      <div className="tag-modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+        <h3>{activating ? 'Activate user?' : 'Deactivate user?'}</h3>
+        <p className="tag-modal-sub">
+          <b>{user.name}</b> ({ROLES.find((r) => r.value === user.role)?.label || user.role}, {user.mobile})
+        </p>
+        <p className="user-status-note">
+          {activating
+            ? 'They will be able to log in again.'
+            : user.role === 'Guard'
+              ? 'They will not be able to log in to the Guard app, and an open session stops working immediately. Their gate passes are kept.'
+              : 'They will not be able to log in to Vimpact App. Their records are kept.'}
+        </p>
+
+        {error && <p className="login-field" style={{ color: 'var(--crit)' }}>{error}</p>}
+
+        <div className="tag-modal-actions">
+          <button type="button" className="btn-ghost" onClick={onCancel} disabled={saving}>Cancel</button>
+          <button
+            type="button"
+            className={activating ? 'btn-primary' : 'btn-primary btn-danger'}
+            onClick={confirm}
+            disabled={saving}
+          >
+            {saving ? 'Saving…' : activating ? 'Activate' : 'Deactivate'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatusBadge({ active }) {
+  return <span className={`user-status ${active ? 'active' : 'inactive'}`}>{active ? 'Active' : 'Inactive'}</span>;
+}
+
 export default function Users() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [modalUser, setModalUser] = useState(undefined); // undefined = closed, null = add, object = edit
+  const [statusUser, setStatusUser] = useState(null); // user awaiting activate/deactivate confirmation
+  const [statusFilter, setStatusFilter] = useState('all'); // all | active | inactive
+  const myUserId = getSession()?.userId;
 
   async function load() {
     setLoading(true);
@@ -152,14 +211,54 @@ export default function Users() {
     load();
   }, []);
 
+  const counts = useMemo(() => ({
+    all: rows.length,
+    active: rows.filter((r) => r.isActive).length,
+    inactive: rows.filter((r) => !r.isActive).length,
+  }), [rows]);
+
+  const filtered = useMemo(() => {
+    if (statusFilter === 'active') return rows.filter((r) => r.isActive);
+    if (statusFilter === 'inactive') return rows.filter((r) => !r.isActive);
+    return rows;
+  }, [rows, statusFilter]);
+
   function handleSaved() {
     setModalUser(undefined);
     load();
   }
 
+  function handleStatusDone() {
+    setStatusUser(null);
+    load();
+  }
+
+  function statusButton(row, extraClass = '') {
+    if (row.userId === myUserId) return null; // you can't deactivate yourself
+    return (
+      <button
+        type="button"
+        className={`table-action-btn ${row.isActive ? 'btn-deactivate' : ''} ${extraClass}`}
+        onClick={() => setStatusUser(row)}
+      >
+        {row.isActive ? 'Deactivate' : 'Activate'}
+      </button>
+    );
+  }
+
+  const emptyText = rows.length === 0 ? 'No users yet.' : `No ${statusFilter} users.`;
+
   return (
     <div className="table-page">
       <div className="table-toolbar">
+        <label>
+          <span>Status</span>
+          <select className="user-status-filter" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+            <option value="all">All ({counts.all})</option>
+            <option value="active">Active ({counts.active})</option>
+            <option value="inactive">Inactive ({counts.inactive})</option>
+          </select>
+        </label>
         <button type="button" className="table-search-btn" onClick={() => setModalUser(null)}>+ Add User</button>
       </div>
 
@@ -167,7 +266,7 @@ export default function Users() {
 
       {loading && (
         <>
-          <TableSkeleton columns={7} rows={6} />
+          <TableSkeleton columns={8} rows={6} />
           <MobileCardSkeleton cards={3} />
         </>
       )}
@@ -184,23 +283,28 @@ export default function Users() {
                   <th>Role</th>
                   <th>Gate</th>
                   <th>Designation</th>
-                  <th className="col-action">Action</th>
+                  <th className="col-status">Status</th>
+                  <th className="col-user-actions">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {rows.length === 0 && (
-                  <tr><td colSpan={7} className="table-empty">No users yet.</td></tr>
+                {filtered.length === 0 && (
+                  <tr><td colSpan={8} className="table-empty">{emptyText}</td></tr>
                 )}
-                {rows.map((row, i) => (
-                  <tr key={row.userId}>
+                {filtered.map((row, i) => (
+                  <tr key={row.userId} className={row.isActive ? '' : 'row-inactive'}>
                     <td className="col-sno">{i + 1}</td>
-                    <td>{row.name}</td>
+                    <td>{row.name}{row.userId === myUserId && <span className="user-you"> (you)</span>}</td>
                     <td className="mono">{row.mobile}</td>
                     <td>{ROLES.find((r) => r.value === row.role)?.label || row.role}</td>
                     <td>{row.gateName || '—'}</td>
                     <td>{row.designation || '—'}</td>
-                    <td className="col-action">
-                      <button type="button" className="table-action-btn" onClick={() => setModalUser(row)}>Edit</button>
+                    <td className="col-status"><StatusBadge active={row.isActive} /></td>
+                    <td className="col-user-actions">
+                      <div className="user-actions">
+                        <button type="button" className="table-action-btn" onClick={() => setModalUser(row)}>Edit</button>
+                        {statusButton(row)}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -209,14 +313,15 @@ export default function Users() {
           </div>
 
           <div className="mobile-card-list">
-            {rows.length === 0 && (
-              <p className="table-empty">No users yet.</p>
+            {filtered.length === 0 && (
+              <p className="table-empty">{emptyText}</p>
             )}
-            {rows.map((row, i) => (
-              <article className="mobile-card" key={row.userId}>
+            {filtered.map((row, i) => (
+              <article className={`mobile-card ${row.isActive ? '' : 'row-inactive'}`} key={row.userId}>
                 <div className="mobile-card-top">
                   <span className="mobile-card-index">#{i + 1}</span>
                   <strong className="mobile-card-id">{row.name}</strong>
+                  <StatusBadge active={row.isActive} />
                 </div>
                 <dl className="mobile-card-meta">
                   <div><dt>Mobile</dt><dd className="mono">{row.mobile}</dd></div>
@@ -224,9 +329,12 @@ export default function Users() {
                   <div><dt>Gate</dt><dd>{row.gateName || '—'}</dd></div>
                   <div><dt>Designation</dt><dd>{row.designation || '—'}</dd></div>
                 </dl>
-                <button type="button" className="table-action-btn mobile-card-action" onClick={() => setModalUser(row)}>
-                  Edit
-                </button>
+                <div className="user-actions">
+                  <button type="button" className="table-action-btn mobile-card-action" onClick={() => setModalUser(row)}>
+                    Edit
+                  </button>
+                  {statusButton(row, 'mobile-card-action')}
+                </div>
               </article>
             ))}
           </div>
@@ -235,6 +343,9 @@ export default function Users() {
 
       {modalUser !== undefined && (
         <UserFormModal initial={modalUser} onCancel={() => setModalUser(undefined)} onSaved={handleSaved} />
+      )}
+      {statusUser && (
+        <StatusConfirmModal user={statusUser} onCancel={() => setStatusUser(null)} onDone={handleStatusDone} />
       )}
     </div>
   );

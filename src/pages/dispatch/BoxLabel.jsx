@@ -29,6 +29,9 @@ export default function BoxLabel({ label, offsetX = 0, offsetY = 0 }) {
         <div className="lbl-line lbl-field" data-fit>FSN NO- {label.fsn}</div>
         <div className="lbl-line lbl-field" data-fit>DOCKET No.- {label.docket}</div>
         <div className="lbl-line lbl-field" data-fit>PO NO. {label.po}</div>
+        {label.transporter && (
+          <div className="lbl-line lbl-field" data-fit>TRANSPORTER- {label.transporter}</div>
+        )}
         <div className="lbl-bottom">
           <span className="lbl-line lbl-invoice" data-fit>INVOICE NO- {label.bill}</span>
           <span className="lbl-box">BOX {label.boxNo}/{label.boxTotal}</span>

@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopNav from './TopNav';
-import { isLoggedIn } from '../../lib/session';
+import { isLoggedIn, getSession } from '../../lib/session';
+import { canAccess, homeForRole } from '../../lib/menus';
 
 const MOBILE_BP = 860;
 const MOBILE_MQ = `(max-width: ${MOBILE_BP}px)`;
@@ -44,6 +45,8 @@ export default function Layout() {
   }, [location.pathname]);
 
   if (!isLoggedIn()) return <Navigate to="/login" replace />;
+  const role = getSession()?.role;
+  if (!canAccess(role, location.pathname)) return <Navigate to={homeForRole(role)} replace />;
 
   function handleToggle() {
     if (isMobile) setMobileOpen((o) => !o);
