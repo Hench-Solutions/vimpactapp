@@ -29,6 +29,9 @@ export default function BoxLabel({ label, offsetX = 0, offsetY = 0 }) {
         <div className="lbl-line lbl-field" data-fit>FSN NO- {label.fsn}</div>
         <div className="lbl-line lbl-field" data-fit>DOCKET No.- {label.docket}</div>
         <div className="lbl-line lbl-field" data-fit>PO NO. {label.po}</div>
+        {label.party && (
+          <div className="lbl-line lbl-field lbl-party" data-fit>PARTY- {label.party}</div>
+        )}
         {label.transporter && (
           <div className="lbl-line lbl-field" data-fit>TRANSPORTER- {label.transporter}</div>
         )}

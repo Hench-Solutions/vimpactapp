@@ -67,9 +67,11 @@
 .lbl-table { min-width: 820px; }
 .lbl-table th, .lbl-table td { padding-left: 10px; padding-right: 10px; }
 .lbl-table .col-check { width: 40px; text-align: center; }
-.lbl-table .col-bill { width: 145px; white-space: nowrap; }
+.lbl-table .col-bill { width: 200px; }
+.lbl-table .col-bill .mono { white-space: nowrap; }
 .lbl-table .col-fsn { width: 145px; font-size: 12.5px; }
 .lbl-table .col-po { width: 260px; font-size: 12.5px; }
+.lbl-table .lbl-party-cell { font-family: inherit; font-size: 11.5px; white-space: normal; margin-top: 2px; }
 .lbl-table .lbl-transporter { font-family: inherit; font-size: 11.5px; white-space: normal; }
 .lbl-table .col-boxes { width: 58px; font-variant-numeric: tabular-nums; }
 .lbl-table .col-range { width: 160px; }
@@ -122,9 +124,10 @@
   transform: translate(var(--ox, 0mm), var(--oy, 0mm));
 }
 .lbl-line { display: block; white-space: nowrap; overflow: hidden; line-height: 1.15; }
-.lbl-company { text-align: center; font-size: 14pt; }
-.lbl-item { text-align: center; font-size: 12pt; }
-.lbl-field { font-size: 11pt; padding-left: 3mm; }
+.lbl-company { text-align: center; font-size: 12pt; }
+.lbl-item { text-align: center; font-size: 11pt; }
+.lbl-field { font-size: 10.5pt; padding-left: 3mm; }
+.lbl-party { text-transform: uppercase; } /* BUSY party names are mixed case; label is all caps */
 .lbl-bottom { display: flex; align-items: center; gap: 2mm; }
 .lbl-invoice { flex: 1; min-width: 0; font-size: 12pt; }
 .lbl-box { flex: none; font-size: 13pt; border: 0.5mm solid #000; border-radius: 1mm; padding: 0.4mm 1.6mm; white-space: nowrap; }

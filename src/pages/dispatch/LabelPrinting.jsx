@@ -39,6 +39,7 @@ function buildLabels(row, range, company) {
       docket: row.docket,
       po: row.po,
       transporter: row.transporter,
+      party: row.party,
       bill: row.bill,
       boxNo: b,
       boxTotal: range.total,
@@ -88,7 +89,7 @@ export default function LabelPrinting() {
   const visibleRows = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return rows;
-    return rows.filter((r) => [r.bill, r.item, r.fsn, r.po, r.docket, r.transporter].some((v) => v.toLowerCase().includes(q)));
+    return rows.filter((r) => [r.bill, r.party, r.item, r.fsn, r.po, r.docket, r.transporter].some((v) => v.toLowerCase().includes(q)));
   }, [rows, search]);
 
   // Cap the table at VISIBLE_ROWS rows (rows differ in height, so measure them) and scroll the rest.
@@ -353,7 +354,7 @@ export default function LabelPrinting() {
                 <span>Search</span>
                 <input
                   type="search"
-                  placeholder="Invoice, item, Sku code, PO, docket or transporter"
+                  placeholder="Invoice, party, item, Sku code, PO, docket or transporter"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                 />
@@ -381,7 +382,7 @@ export default function LabelPrinting() {
                         disabled={!selectableVisible.length}
                       />
                     </th>
-                    <th className="col-bill">Invoice</th>
+                    <th className="col-bill">Invoice / Party</th>
                     <th>Item</th>
                     <th className="col-fsn">Sku Code (FSN)</th>
                     <th className="col-po">PO / Docket / Transporter</th>
@@ -411,7 +412,10 @@ export default function LabelPrinting() {
                             onChange={() => toggleRow(row.id)}
                           />
                         </td>
-                        <td className="mono col-bill">{row.bill}</td>
+                        <td className="col-bill">
+                          <div className="mono">{row.bill}</div>
+                          {row.party && <div className="lbl-muted lbl-party-cell">{row.party}</div>}
+                        </td>
                         <td>
                           <div className="lbl-cell-item">{row.item}</div>
                           {bad && <div className="lbl-cell-error">Missing: {row.errors.join(', ')} (Excel row {row.excelRow})</div>}
