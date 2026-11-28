@@ -1,27 +1,31 @@
-import { useEffect, useState } from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import Sidebar from './Sidebar';
-import TopNav from './TopNav';
-import { isLoggedIn, getSession } from '../../lib/session';
-import { canAccess, homeForRole } from '../../lib/menus';
+import { useEffect, useState } from "react";
+
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+
+import { canAccess, homeForRole } from "../../lib/menus";
+import { getSession, isLoggedIn } from "../../lib/session";
+import Sidebar from "./Sidebar";
+import TopNav from "./TopNav";
 
 const MOBILE_BP = 860;
 const MOBILE_MQ = `(max-width: ${MOBILE_BP}px)`;
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== 'undefined' ? window.matchMedia(MOBILE_MQ).matches : false,
+    typeof window !== "undefined" ?
+      window.matchMedia(MOBILE_MQ).matches
+    : false,
   );
 
   useEffect(() => {
     const mql = window.matchMedia(MOBILE_MQ);
     const sync = () => setIsMobile(mql.matches);
     sync();
-    mql.addEventListener('change', sync);
-    window.addEventListener('resize', sync);
+    mql.addEventListener("change", sync);
+    window.addEventListener("resize", sync);
     return () => {
-      mql.removeEventListener('change', sync);
-      window.removeEventListener('resize', sync);
+      mql.removeEventListener("change", sync);
+      window.removeEventListener("resize", sync);
     };
   }, []);
 
@@ -35,18 +39,17 @@ export default function Layout() {
   const location = useLocation();
 
   useEffect(() => {
-    // oxlint-disable-next-line react/set-state-in-effect
     if (!isMobile) setMobileOpen(false);
   }, [isMobile]);
 
   useEffect(() => {
-    // oxlint-disable-next-line react/set-state-in-effect
     setMobileOpen(false);
   }, [location.pathname]);
 
   if (!isLoggedIn()) return <Navigate to="/login" replace />;
   const role = getSession()?.role;
-  if (!canAccess(role, location.pathname)) return <Navigate to={homeForRole(role)} replace />;
+  if (!canAccess(role, location.pathname))
+    return <Navigate to={homeForRole(role)} replace />;
 
   function handleToggle() {
     if (isMobile) setMobileOpen((o) => !o);
@@ -54,7 +57,7 @@ export default function Layout() {
   }
 
   return (
-    <div className={`app-wrapper ${mobileOpen ? 'nav-open' : ''}`}>
+    <div className={`app-wrapper ${mobileOpen ? "nav-open" : ""}`}>
       {mobileOpen && (
         <button
           type="button"
@@ -68,7 +71,9 @@ export default function Layout() {
         mobileOpen={mobileOpen}
         onNavigate={() => setMobileOpen(false)}
       />
-      <div className={`main-content ${!isMobile && collapsed ? 'collapsed' : ''}`}>
+      <div
+        className={`main-content ${!isMobile && collapsed ? "collapsed" : ""}`}
+      >
         <TopNav
           collapsed={!isMobile && collapsed}
           onToggle={handleToggle}

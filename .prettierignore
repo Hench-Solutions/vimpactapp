@@ -1,0 +1,15 @@
+# Dependencies & build
+node_modules
+dist
+dev-dist
+.vercel
+.cache
+
+# Lockfiles
+bun.lock
+
+# Static assets & local data
+public
+.data
+.env
+.env.*

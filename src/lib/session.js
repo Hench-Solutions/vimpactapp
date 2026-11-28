@@ -1,4 +1,4 @@
-const SESSION_KEY = 'vimpactapp:session';
+const SESSION_KEY = "vimpactapp:session";
 
 export function getSession() {
   const raw = localStorage.getItem(SESSION_KEY);

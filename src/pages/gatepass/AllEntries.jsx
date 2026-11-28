@@ -1,24 +1,33 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { fetchAllGatePasses } from '../../lib/api';
-import { MobileCardSkeleton, TableSkeleton } from '../../components/LoadingState';
+import { useEffect, useMemo, useState } from "react";
+
+import { useNavigate } from "react-router-dom";
+
+import {
+  MobileCardSkeleton,
+  TableSkeleton,
+} from "../../components/LoadingState";
+import { fetchAllGatePasses } from "../../lib/api";
 
 function formatDate(iso) {
   const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  return d.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export default function AllEntries() {
   const navigate = useNavigate();
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [fromDate, setFromDate] = useState('');
-  const [toDate, setToDate] = useState('');
+  const [error, setError] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   async function load() {
     setLoading(true);
-    setError('');
+    setError("");
     try {
       setRows(await fetchAllGatePasses());
     } catch (err) {
@@ -29,7 +38,6 @@ export default function AllEntries() {
   }
 
   useEffect(() => {
-    // oxlint-disable-next-line react/set-state-in-effect
     load();
   }, []);
 
@@ -52,14 +60,27 @@ export default function AllEntries() {
       <div className="table-toolbar">
         <label>
           <span>From Date</span>
-          <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+          />
         </label>
         <label>
           <span>To Date</span>
-          <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+          />
         </label>
-        <button type="button" className="table-search-btn" onClick={load} disabled={loading}>
-          {loading ? 'Refreshing…' : 'Refresh'}
+        <button
+          type="button"
+          className="table-search-btn"
+          onClick={load}
+          disabled={loading}
+        >
+          {loading ? "Refreshing…" : "Refresh"}
         </button>
       </div>
 
@@ -88,7 +109,11 @@ export default function AllEntries() {
               </thead>
               <tbody>
                 {filtered.length === 0 && (
-                  <tr><td colSpan={6} className="table-empty">No gate passes yet.</td></tr>
+                  <tr>
+                    <td colSpan={6} className="table-empty">
+                      No gate passes yet.
+                    </td>
+                  </tr>
                 )}
                 {filtered.map((row, i) => (
                   <tr key={row.gatePassId}>
@@ -98,7 +123,11 @@ export default function AllEntries() {
                     <td className="col-date">{formatDate(row.createdAt)}</td>
                     <td className="col-guard">{row.guardName}</td>
                     <td className="col-action">
-                      <button type="button" className="table-action-btn" onClick={() => openDetail(row)}>
+                      <button
+                        type="button"
+                        className="table-action-btn"
+                        onClick={() => openDetail(row)}
+                      >
                         View
                       </button>
                     </td>
@@ -119,11 +148,24 @@ export default function AllEntries() {
                   <span className="mono mobile-card-id">{row.gatePassNo}</span>
                 </div>
                 <dl className="mobile-card-meta">
-                  <div><dt>Documents</dt><dd>{row.photoCount}</dd></div>
-                  <div><dt>Entry</dt><dd>{formatDate(row.createdAt)}</dd></div>
-                  <div><dt>Guard</dt><dd>{row.guardName}</dd></div>
+                  <div>
+                    <dt>Documents</dt>
+                    <dd>{row.photoCount}</dd>
+                  </div>
+                  <div>
+                    <dt>Entry</dt>
+                    <dd>{formatDate(row.createdAt)}</dd>
+                  </div>
+                  <div>
+                    <dt>Guard</dt>
+                    <dd>{row.guardName}</dd>
+                  </div>
                 </dl>
-                <button type="button" className="table-action-btn mobile-card-action" onClick={() => openDetail(row)}>
+                <button
+                  type="button"
+                  className="table-action-btn mobile-card-action"
+                  onClick={() => openDetail(row)}
+                >
                   View
                 </button>
               </article>

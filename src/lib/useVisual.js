@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-const KEY = 'vimpactapp:visual';
-const EVENT = 'vimpactapp:visualchange';
+const KEY = "vimpactapp:visual";
+const EVENT = "vimpactapp:visualchange";
 
 export function setVisual(value) {
   localStorage.setItem(KEY, value);
@@ -9,9 +9,11 @@ export function setVisual(value) {
 }
 
 export function useVisual() {
-  const [visual, setLocal] = useState(() => localStorage.getItem(KEY) || 'charcoal');
+  const [visual, setLocal] = useState(
+    () => localStorage.getItem(KEY) || "charcoal",
+  );
   useEffect(() => {
-    const onChange = () => setLocal(localStorage.getItem(KEY) || 'charcoal');
+    const onChange = () => setLocal(localStorage.getItem(KEY) || "charcoal");
     window.addEventListener(EVENT, onChange);
     return () => window.removeEventListener(EVENT, onChange);
   }, []);

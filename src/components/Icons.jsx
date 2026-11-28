@@ -3,14 +3,14 @@
 function Icon({ size = 18, className, children, title, decorative = true }) {
   return (
     <svg
-      className={className ? `icon ${className}` : 'icon'}
+      className={className ? `icon ${className}` : "icon"}
       width={size}
       height={size}
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden={decorative ? true : undefined}
-      role={decorative ? undefined : 'img'}
+      role={decorative ? undefined : "img"}
       aria-label={!decorative && title ? title : undefined}
     >
       {children}
@@ -19,10 +19,10 @@ function Icon({ size = 18, className, children, title, decorative = true }) {
 }
 
 const stroke = {
-  stroke: 'currentColor',
+  stroke: "currentColor",
   strokeWidth: 1.75,
-  strokeLinecap: 'round',
-  strokeLinejoin: 'round',
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
 };
 
 export function MenuIcon(props) {
@@ -64,8 +64,14 @@ export function EyeOffIcon(props) {
     <Icon {...props}>
       <path d="M3 3l18 18" {...stroke} />
       <path d="M10.6 10.6A3 3 0 0 0 13.4 13.4" {...stroke} />
-      <path d="M9.9 5.2A10.5 10.5 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-4.1 4.8" {...stroke} />
-      <path d="M6.1 6.1A17.4 17.4 0 0 0 2 12s3.5 7 10 7c1.4 0 2.7-.3 3.9-.8" {...stroke} />
+      <path
+        d="M9.9 5.2A10.5 10.5 0 0 1 12 5c6.5 0 10 7 10 7a17.6 17.6 0 0 1-4.1 4.8"
+        {...stroke}
+      />
+      <path
+        d="M6.1 6.1A17.4 17.4 0 0 0 2 12s3.5 7 10 7c1.4 0 2.7-.3 3.9-.8"
+        {...stroke}
+      />
     </Icon>
   );
 }
