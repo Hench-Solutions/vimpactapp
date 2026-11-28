@@ -1,29 +1,30 @@
-import { Link } from 'react-router-dom';
-import { getSession } from '../../lib/session';
+import { Link } from "react-router-dom";
+
+import { getSession } from "../../lib/session";
 
 const SHORTCUTS = [
   {
-    to: '/gatepass/all',
-    label: 'All Entries',
-    hint: 'Browse and open gate passes',
+    to: "/gatepass/all",
+    label: "All Entries",
+    hint: "Browse and open gate passes",
   },
   {
-    to: '/gatepass/review',
-    label: 'Review Queue',
-    hint: 'Coming next — OCR & sign-off',
+    to: "/gatepass/review",
+    label: "Review Queue",
+    hint: "Coming next — OCR & sign-off",
     soon: true,
   },
   {
-    to: '/users',
-    label: 'Users',
-    hint: 'Admin · manage staff & guards',
+    to: "/users",
+    label: "Users",
+    hint: "Admin · manage staff & guards",
     adminOnly: true,
   },
 ];
 
 export default function Dashboard() {
   const session = getSession();
-  const isAdmin = session?.role === 'Admin';
+  const isAdmin = session?.role === "Admin";
   const items = SHORTCUTS.filter((s) => !s.adminOnly || isAdmin);
 
   return (
@@ -32,14 +33,19 @@ export default function Dashboard() {
         <p className="dash-eyebrow">Workspace</p>
         <h2>Welcome, {session?.name || session?.username}</h2>
         <p className="dash-sub">
-          Signed in as <strong>{session?.role}</strong>. Use the sidebar or jump into a module
-          below — the shell already mirrors what this role can open.
+          Signed in as <strong>{session?.role}</strong>. Use the sidebar or jump
+          into a module below — the shell already mirrors what this role can
+          open.
         </p>
       </header>
 
       <div className="dash-grid">
         {items.map((item) => (
-          <Link key={item.to} to={item.to} className={`dash-card ${item.soon ? 'soon' : ''}`}>
+          <Link
+            key={item.to}
+            to={item.to}
+            className={`dash-card ${item.soon ? "soon" : ""}`}
+          >
             <span className="dash-card-label">
               {item.label}
               {item.soon && <em>Soon</em>}

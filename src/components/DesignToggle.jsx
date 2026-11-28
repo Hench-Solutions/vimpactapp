@@ -1,34 +1,36 @@
-import { useEffect } from 'react';
-import { useVisual, setVisual } from '../lib/useVisual';
+import { useEffect } from "react";
+
+import { setVisual, useVisual } from "../lib/useVisual";
 
 // Review-only theme toggle (not shipped product).
 export default function DesignToggle({ compact = false, floating = false }) {
   const visual = useVisual();
 
   useEffect(() => {
-    if (visual === 'green') document.documentElement.setAttribute('data-visual', 'green');
-    else document.documentElement.removeAttribute('data-visual');
+    if (visual === "green")
+      document.documentElement.setAttribute("data-visual", "green");
+    else document.documentElement.removeAttribute("data-visual");
   }, [visual]);
 
   return (
     <div
-      className={`design-toggle ${compact ? 'compact' : ''} ${floating ? 'floating' : ''}`}
+      className={`design-toggle ${compact ? "compact" : ""} ${floating ? "floating" : ""}`}
       role="group"
       aria-label="Visual theme"
     >
       <button
         type="button"
-        className={visual === 'charcoal' ? 'active' : ''}
-        onClick={() => setVisual('charcoal')}
+        className={visual === "charcoal" ? "active" : ""}
+        onClick={() => setVisual("charcoal")}
       >
-        {compact ? 'Classic' : 'Classic'}
+        {compact ? "Classic" : "Classic"}
       </button>
       <button
         type="button"
-        className={visual === 'green' ? 'active' : ''}
-        onClick={() => setVisual('green')}
+        className={visual === "green" ? "active" : ""}
+        onClick={() => setVisual("green")}
       >
-        {compact ? 'Modern' : 'Modern'}
+        {compact ? "Modern" : "Modern"}
       </button>
     </div>
   );

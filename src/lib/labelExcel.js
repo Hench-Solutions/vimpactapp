@@ -6,30 +6,34 @@
 // Transporter / Vch/Bill No / Particulars; the invoice's next items have those
 // cells blank and inherit them. Reading stops at the "Total" row, whose
 // CASE / BOX and Qty are used to check nothing was missed.
-import * as XLSX from 'xlsx';
+import * as XLSX from "xlsx";
 
 // The exact header row of the BUSY export, in order. Uploads must match it
 // (letter case and extra spaces ignored); anything else is rejected.
 const EXPECTED_COLUMNS = [
-  { name: 'Date', key: 'date' },
-  { name: 'PO NUMBER', key: 'po' },
-  { name: 'Docket No / Gr No', key: 'docket' },
-  { name: 'TRANSPORTER', key: 'transporter' },
-  { name: 'Vch/Bill No', key: 'bill' },
-  { name: 'Particulars', key: 'party' },
-  { name: 'Sku Code', key: 'fsn' },
-  { name: 'Item Details', key: 'item' },
-  { name: 'CASE / BOX', key: 'boxes' },
-  { name: 'Qty.', key: 'qty' },
-  { name: 'Unit', key: 'unit' },
-  { name: 'Price', key: 'price' },
-  { name: 'Amount', key: 'amount' },
-  { name: 'AMT WITH GST', key: 'amountGst' },
+  { name: "Date", key: "date" },
+  { name: "PO NUMBER", key: "po" },
+  { name: "Docket No / Gr No", key: "docket" },
+  { name: "TRANSPORTER", key: "transporter" },
+  { name: "Vch/Bill No", key: "bill" },
+  { name: "Particulars", key: "party" },
+  { name: "Sku Code", key: "fsn" },
+  { name: "Item Details", key: "item" },
+  { name: "CASE / BOX", key: "boxes" },
+  { name: "Qty.", key: "qty" },
+  { name: "Unit", key: "unit" },
+  { name: "Price", key: "price" },
+  { name: "Amount", key: "amount" },
+  { name: "AMT WITH GST", key: "amountGst" },
 ];
 
 export const LABEL_HEADERS = EXPECTED_COLUMNS.map((c) => c.name);
 
-const clean = (s) => String(s ?? '').trim().replace(/\s+/g, ' ').toLowerCase();
+const clean = (s) =>
+  String(s ?? "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
 
 /** Error for a file that isn't the expected BUSY export; details lists what differs. */
 export class LabelFileError extends Error {
@@ -40,36 +44,43 @@ export class LabelFileError extends Error {
 }
 
 function columnLetter(index) {
-  let s = '';
-  for (let n = index + 1; n > 0; n = Math.floor((n - 1) / 26)) s = String.fromCharCode(65 + ((n - 1) % 26)) + s;
+  let s = "";
+  for (let n = index + 1; n > 0; n = Math.floor((n - 1) / 26))
+    s = String.fromCharCode(65 + ((n - 1) % 26)) + s;
   return s;
 }
 
 function toNumber(v) {
-  const n = parseFloat(String(v ?? '').replace(/,/g, '').trim());
+  const n = parseFloat(
+    String(v ?? "")
+      .replace(/,/g, "")
+      .trim(),
+  );
   return Number.isFinite(n) ? n : NaN;
 }
 
 /** Finds the header row (the one containing "Vch/Bill No") and checks it column by column. */
 function validateHeader(grid) {
-  const r = grid.slice(0, 30).findIndex((line) => line.some((c) => clean(c) === 'vch/bill no'));
+  const r = grid
+    .slice(0, 30)
+    .findIndex((line) => line.some((c) => clean(c) === "vch/bill no"));
   if (r === -1) {
     throw new LabelFileError(
       'This is not the BUSY "List of Sales Vouchers" file: no header row with "Vch/Bill No" was found.',
-      [`Expected header: ${LABEL_HEADERS.join(' | ')}`],
+      [`Expected header: ${LABEL_HEADERS.join(" | ")}`],
     );
   }
 
   const cells = grid[r].map(clean);
-  const first = cells.findIndex((c) => c !== '');
+  const first = cells.findIndex((c) => c !== "");
   let last = cells.length - 1;
-  while (last > first && cells[last] === '') last--;
+  while (last > first && cells[last] === "") last--;
 
   const details = [];
   const width = Math.max(EXPECTED_COLUMNS.length, last - first + 1);
   for (let i = 0; i < width; i++) {
     const want = EXPECTED_COLUMNS[i]?.name;
-    const raw = String(grid[r][first + i] ?? '').trim();
+    const raw = String(grid[r][first + i] ?? "").trim();
     if (clean(raw) === clean(want)) continue;
     const where = `Column ${columnLetter(first + i)}`;
     if (!want) details.push(`${where}: extra column "${raw}" is not expected`);
@@ -84,7 +95,9 @@ function validateHeader(grid) {
   }
 
   const col = {};
-  EXPECTED_COLUMNS.forEach((c, i) => { col[c.key] = first + i; });
+  EXPECTED_COLUMNS.forEach((c, i) => {
+    col[c.key] = first + i;
+  });
   return { row: r, col };
 }
 
@@ -96,22 +109,31 @@ function validateHeader(grid) {
  * Throws LabelFileError (message + details) when the file isn't the expected export.
  */
 export async function readLabelExcel(file) {
-  if (!/\.(xlsx|xls)$/i.test(file.name || '')) {
-    throw new LabelFileError('Please upload an Excel file (.xlsx or .xls) exported from BUSY.');
+  if (!/\.(xlsx|xls)$/i.test(file.name || "")) {
+    throw new LabelFileError(
+      "Please upload an Excel file (.xlsx or .xls) exported from BUSY.",
+    );
   }
   let wb;
   try {
     wb = XLSX.read(await file.arrayBuffer(), { cellDates: true });
   } catch {
-    throw new LabelFileError('This file could not be opened as an Excel workbook.');
+    throw new LabelFileError(
+      "This file could not be opened as an Excel workbook.",
+    );
   }
   const ws = wb.Sheets[wb.SheetNames[0]];
-  if (!ws) throw new LabelFileError('The Excel file has no sheets.');
+  if (!ws) throw new LabelFileError("The Excel file has no sheets.");
 
-  const grid = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '', dateNF: 'dd-mm-yyyy' });
+  const grid = XLSX.utils.sheet_to_json(ws, {
+    header: 1,
+    raw: false,
+    defval: "",
+    dateNF: "dd-mm-yyyy",
+  });
   const header = validateHeader(grid);
   const { col } = header;
-  const get = (line, key) => String(line[col[key]] ?? '').trim();
+  const get = (line, key) => String(line[col[key]] ?? "").trim();
 
   const rows = [];
   let returnsSkipped = 0;
@@ -123,17 +145,21 @@ export async function readLabelExcel(file) {
 
   for (let r = header.row + 1; r < grid.length; r++) {
     const line = grid[r];
-    const item = get(line, 'item').replace(/\s+/g, ' ');
-    const bill = get(line, 'bill');
+    const item = get(line, "item").replace(/\s+/g, " ");
+    const bill = get(line, "bill");
 
     // End of data: BUSY's Total row.
     if (!bill && /^(grand\s*)?total$/i.test(item)) {
-      const boxesTotal = toNumber(get(line, 'boxes'));
-      const qtyTotal = toNumber(get(line, 'qty'));
+      const boxesTotal = toNumber(get(line, "boxes"));
+      const qtyTotal = toNumber(get(line, "qty"));
       totalCheck = {
-        boxesFile, boxesTotal, qtyFile, qtyTotal,
-        ok: (Number.isNaN(boxesTotal) || boxesTotal === boxesFile)
-          && (Number.isNaN(qtyTotal) || Math.abs(qtyTotal - qtyFile) < 0.001),
+        boxesFile,
+        boxesTotal,
+        qtyFile,
+        qtyTotal,
+        ok:
+          (Number.isNaN(boxesTotal) || boxesTotal === boxesFile) &&
+          (Number.isNaN(qtyTotal) || Math.abs(qtyTotal - qtyFile) < 0.001),
       };
       break;
     }
@@ -143,18 +169,18 @@ export async function readLabelExcel(file) {
       // First item of a new invoice: it carries the invoice-level fields.
       current = {
         bill,
-        date: get(line, 'date'),
-        party: get(line, 'party'),
-        po: get(line, 'po'),
-        docket: get(line, 'docket'),
-        transporter: get(line, 'transporter'),
+        date: get(line, "date"),
+        party: get(line, "party"),
+        po: get(line, "po"),
+        docket: get(line, "docket"),
+        transporter: get(line, "transporter"),
       };
     } else if (!current) {
       continue; // item line with no invoice above it
     }
 
-    const qty = toNumber(get(line, 'qty'));
-    const boxesRaw = toNumber(get(line, 'boxes'));
+    const qty = toNumber(get(line, "qty"));
+    const boxesRaw = toNumber(get(line, "boxes"));
     if (!Number.isNaN(boxesRaw)) boxesFile += boxesRaw;
     if (!Number.isNaN(qty)) qtyFile += qty;
 
@@ -164,18 +190,21 @@ export async function readLabelExcel(file) {
     }
 
     // If BUSY ever repeats PO / Docket / Transporter on an item row, use that value.
-    current.po = get(line, 'po') || current.po;
-    current.docket = get(line, 'docket') || current.docket;
-    current.transporter = get(line, 'transporter') || current.transporter;
+    current.po = get(line, "po") || current.po;
+    current.docket = get(line, "docket") || current.docket;
+    current.transporter = get(line, "transporter") || current.transporter;
 
-    const fsn = get(line, 'fsn');
+    const fsn = get(line, "fsn");
     const boxes = Number.isInteger(boxesRaw) && boxesRaw > 0 ? boxesRaw : 0;
 
     const errors = [];
-    if (!fsn) errors.push('Sku Code');
-    if (!current.po) errors.push('PO Number');
-    if (!current.docket) errors.push('Docket No');
-    if (!boxes) errors.push(Number.isNaN(boxesRaw) ? 'CASE / BOX' : 'CASE / BOX (whole number > 0)');
+    if (!fsn) errors.push("Sku Code");
+    if (!current.po) errors.push("PO Number");
+    if (!current.docket) errors.push("Docket No");
+    if (!boxes)
+      errors.push(
+        Number.isNaN(boxesRaw) ? "CASE / BOX" : "CASE / BOX (whole number > 0)",
+      );
 
     rows.push({
       id: rows.length,
@@ -188,14 +217,17 @@ export async function readLabelExcel(file) {
       transporter: current.transporter,
       item,
       fsn,
-      qty: Number.isNaN(qty) ? '' : qty,
-      unit: get(line, 'unit'),
+      qty: Number.isNaN(qty) ? "" : qty,
+      unit: get(line, "unit"),
       boxes,
       errors,
     });
   }
 
-  if (rows.length === 0) throw new LabelFileError('The headers are correct, but no sale items were found below them.');
+  if (rows.length === 0)
+    throw new LabelFileError(
+      "The headers are correct, but no sale items were found below them.",
+    );
   return { rows, returnsSkipped, totalCheck };
 }
 
@@ -206,7 +238,7 @@ export async function readLabelExcel(file) {
  */
 export function computeBoxNumbering(rows, mode) {
   const result = {};
-  if (mode === 'invoice') {
+  if (mode === "invoice") {
     const byBill = new Map();
     for (const row of rows) {
       if (row.errors.length) continue;
@@ -231,8 +263,10 @@ export function computeBoxNumbering(rows, mode) {
 
 export function downloadTemplate() {
   const ws = XLSX.utils.aoa_to_sheet([LABEL_HEADERS]);
-  ws['!cols'] = [12, 16, 18, 28, 18, 34, 20, 40, 10, 8, 7, 9, 11, 13].map((wch) => ({ wch }));
+  ws["!cols"] = [12, 16, 18, 28, 18, 34, 20, 40, 10, 8, 7, 9, 11, 13].map(
+    (wch) => ({ wch }),
+  );
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Label Data');
-  XLSX.writeFile(wb, 'Label Upload Template.xlsx');
+  XLSX.utils.book_append_sheet(wb, ws, "Label Data");
+  XLSX.writeFile(wb, "Label Upload Template.xlsx");
 }

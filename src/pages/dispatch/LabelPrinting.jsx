@@ -1,16 +1,31 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { readLabelExcel, computeBoxNumbering, downloadTemplate, LABEL_HEADERS } from '../../lib/labelExcel';
-import BoxLabel from './BoxLabel';
-import './labels.css';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
-const SETTINGS_KEY = 'vimpactapp:labelSettings';
-const DEFAULT_SETTINGS = { company: 'VIMPACT CARE PVT LTD', numbering: 'sku', offsetX: 0, offsetY: 0 };
+import {
+  computeBoxNumbering,
+  downloadTemplate,
+  LABEL_HEADERS,
+  readLabelExcel,
+} from "../../lib/labelExcel";
+import BoxLabel from "./BoxLabel";
+
+import "./labels.css";
+
+const SETTINGS_KEY = "vimpactapp:labelSettings";
+const DEFAULT_SETTINGS = {
+  company: "VIMPACT CARE PVT LTD",
+  numbering: "sku",
+  offsetX: 0,
+  offsetY: 0,
+};
 const VISIBLE_ROWS = 10; // table scrolls after this many rows
 
 function loadSettings() {
   try {
-    return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') };
+    return {
+      ...DEFAULT_SETTINGS,
+      ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}"),
+    };
   } catch {
     return DEFAULT_SETTINGS;
   }
@@ -22,10 +37,25 @@ function rangeFor(row, numbering, input) {
   if (!n) return null;
   const min = n.offset + 1;
   const max = n.offset + row.boxes;
-  const from = input?.from === undefined || input.from === '' ? min : Number(input.from);
-  const to = input?.to === undefined || input.to === '' ? max : Number(input.to);
-  const valid = Number.isInteger(from) && Number.isInteger(to) && from >= min && to <= max && from <= to;
-  return { min, max, from, to, total: n.total, valid, count: valid ? to - from + 1 : 0 };
+  const from =
+    input?.from === undefined || input.from === "" ? min : Number(input.from);
+  const to =
+    input?.to === undefined || input.to === "" ? max : Number(input.to);
+  const valid =
+    Number.isInteger(from) &&
+    Number.isInteger(to) &&
+    from >= min &&
+    to <= max &&
+    from <= to;
+  return {
+    min,
+    max,
+    from,
+    to,
+    total: n.total,
+    valid,
+    count: valid ? to - from + 1 : 0,
+  };
 }
 
 function buildLabels(row, range, company) {
@@ -56,7 +86,7 @@ export default function LabelPrinting() {
   const [dragOver, setDragOver] = useState(false);
   const [selected, setSelected] = useState(() => new Set());
   const [ranges, setRanges] = useState({});
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [previewId, setPreviewId] = useState(null);
   const [printJob, setPrintJob] = useState(null);
   const [toolsOpen, setToolsOpen] = useState(false); // preview & settings section, collapsed by default
@@ -78,18 +108,26 @@ export default function LabelPrinting() {
   }, [printJob]);
 
   const rows = useMemo(() => file?.rows ?? [], [file]);
-  const numbering = useMemo(() => computeBoxNumbering(rows, settings.numbering), [rows, settings.numbering]);
+  const numbering = useMemo(
+    () => computeBoxNumbering(rows, settings.numbering),
+    [rows, settings.numbering],
+  );
 
   const rangeById = useMemo(() => {
     const map = {};
-    for (const row of rows) map[row.id] = rangeFor(row, numbering, ranges[row.id]);
+    for (const row of rows)
+      map[row.id] = rangeFor(row, numbering, ranges[row.id]);
     return map;
   }, [rows, numbering, ranges]);
 
   const visibleRows = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return rows;
-    return rows.filter((r) => [r.bill, r.party, r.item, r.fsn, r.po, r.docket, r.transporter].some((v) => v.toLowerCase().includes(q)));
+    return rows.filter((r) =>
+      [r.bill, r.party, r.item, r.fsn, r.po, r.docket, r.transporter].some(
+        (v) => v.toLowerCase().includes(q),
+      ),
+    );
   }, [rows, search]);
 
   // Cap the table at VISIBLE_ROWS rows (rows differ in height, so measure them) and scroll the rest.
@@ -97,22 +135,24 @@ export default function LabelPrinting() {
     const wrap = tableWrapRef.current;
     if (!wrap) return undefined;
     const measure = () => {
-      const trs = wrap.querySelectorAll('tbody tr');
+      const trs = wrap.querySelectorAll("tbody tr");
       if (trs.length <= VISIBLE_ROWS) {
-        wrap.style.maxHeight = '';
+        wrap.style.maxHeight = "";
         return;
       }
-      let height = wrap.querySelector('thead').offsetHeight;
+      let height = wrap.querySelector("thead").offsetHeight;
       for (let i = 0; i < VISIBLE_ROWS; i++) height += trs[i].offsetHeight;
       wrap.style.maxHeight = `${height + 2}px`;
     };
     measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
   }, [visibleRows, file]);
 
   const summary = useMemo(() => {
-    const selectedRows = rows.filter((r) => selected.has(r.id) && rangeById[r.id]?.valid);
+    const selectedRows = rows.filter(
+      (r) => selected.has(r.id) && rangeById[r.id]?.valid,
+    );
     return {
       invoices: new Set(rows.map((r) => r.bill)).size,
       skus: rows.length,
@@ -122,10 +162,17 @@ export default function LabelPrinting() {
     };
   }, [rows, selected, rangeById]);
 
-  const previewRow = rows.find((r) => r.id === previewId && !r.errors.length) || rows.find((r) => !r.errors.length);
+  const previewRow =
+    rows.find((r) => r.id === previewId && !r.errors.length) ||
+    rows.find((r) => !r.errors.length);
   const previewRange = previewRow ? rangeById[previewRow.id] : null;
-  const previewLabel = previewRow && previewRange?.valid
-    ? buildLabels(previewRow, { ...previewRange, to: previewRange.from }, settings.company)[0]
+  const previewLabel =
+    previewRow && previewRange?.valid ?
+      buildLabels(
+        previewRow,
+        { ...previewRange, to: previewRange.from },
+        settings.company,
+      )[0]
     : null;
 
   async function handleFile(f) {
@@ -135,20 +182,24 @@ export default function LabelPrinting() {
     try {
       const parsed = await readLabelExcel(f);
       setFile({ name: f.name, ...parsed });
-      setSelected(new Set(parsed.rows.filter((r) => !r.errors.length).map((r) => r.id)));
+      setSelected(
+        new Set(parsed.rows.filter((r) => !r.errors.length).map((r) => r.id)),
+      );
       setRanges({});
-      setSearch('');
+      setSearch("");
       setPreviewId(null);
     } catch (err) {
       setFile(null);
       setError({
-        message: err.message || 'Could not read this file. Please upload an .xlsx or .xls file.',
+        message:
+          err.message ||
+          "Could not read this file. Please upload an .xlsx or .xls file.",
         details: err.details || [],
         fileName: f.name,
       });
     } finally {
       setReading(false);
-      if (inputRef.current) inputRef.current.value = '';
+      if (inputRef.current) inputRef.current.value = "";
     }
   }
 
@@ -162,7 +213,9 @@ export default function LabelPrinting() {
   }
 
   const selectableVisible = visibleRows.filter((r) => !r.errors.length);
-  const allVisibleSelected = selectableVisible.length > 0 && selectableVisible.every((r) => selected.has(r.id));
+  const allVisibleSelected =
+    selectableVisible.length > 0 &&
+    selectableVisible.every((r) => selected.has(r.id));
 
   function toggleAllVisible() {
     setSelected((prev) => {
@@ -198,18 +251,30 @@ export default function LabelPrinting() {
     <div className="table-page labels-page">
       {/* Upload */}
       <section
-        className={`lbl-upload ${dragOver ? 'drag' : ''}`}
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        className={`lbl-upload ${dragOver ? "drag" : ""}`}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
         onDragLeave={() => setDragOver(false)}
-        onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files?.[0]); }}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          handleFile(e.dataTransfer.files?.[0]);
+        }}
       >
         <div>
           <h3>Upload sales Excel</h3>
           <p>
-            BUSY "List of Sales Vouchers" export with <b>PO NUMBER</b>, <b>Docket No / Gr No</b>,{' '}
-            <b>TRANSPORTER</b>, <b>Sku Code</b> and <b>CASE / BOX</b>. Drag the file here or choose it.
+            BUSY "List of Sales Vouchers" export with <b>PO NUMBER</b>,{" "}
+            <b>Docket No / Gr No</b>, <b>TRANSPORTER</b>, <b>Sku Code</b> and{" "}
+            <b>CASE / BOX</b>. Drag the file here or choose it.
           </p>
-          {file && <p className="lbl-file-name">Loaded: <b>{file.name}</b></p>}
+          {file && (
+            <p className="lbl-file-name">
+              Loaded: <b>{file.name}</b>
+            </p>
+          )}
         </div>
         <div className="lbl-upload-actions">
           <input
@@ -219,10 +284,23 @@ export default function LabelPrinting() {
             hidden
             onChange={(e) => handleFile(e.target.files?.[0])}
           />
-          <button type="button" className="table-search-btn" onClick={() => inputRef.current?.click()} disabled={reading}>
-            {reading ? 'Reading…' : file ? 'Choose another file' : 'Choose Excel file'}
+          <button
+            type="button"
+            className="table-search-btn"
+            onClick={() => inputRef.current?.click()}
+            disabled={reading}
+          >
+            {reading ?
+              "Reading…"
+            : file ?
+              "Choose another file"
+            : "Choose Excel file"}
           </button>
-          <button type="button" className="table-action-btn" onClick={downloadTemplate}>
+          <button
+            type="button"
+            className="table-action-btn"
+            onClick={downloadTemplate}
+          >
             Download blank template
           </button>
         </div>
@@ -230,14 +308,19 @@ export default function LabelPrinting() {
 
       {error && (
         <div className="page-banner page-banner-error lbl-reject" role="alert">
-          <b>File rejected{error.fileName ? `: ${error.fileName}` : ''}</b>
+          <b>File rejected{error.fileName ? `: ${error.fileName}` : ""}</b>
           <p>{error.message}</p>
           {error.details.length > 0 && (
-            <ul>{error.details.map((d) => <li key={d}>{d}</li>)}</ul>
+            <ul>
+              {error.details.map((d) => (
+                <li key={d}>{d}</li>
+              ))}
+            </ul>
           )}
           <p className="lbl-reject-hint">
-            Upload the BUSY "List of Sales Vouchers" export with these columns in this order:{' '}
-            <span className="mono">{LABEL_HEADERS.join(' | ')}</span>
+            Upload the BUSY "List of Sales Vouchers" export with these columns
+            in this order:{" "}
+            <span className="mono">{LABEL_HEADERS.join(" | ")}</span>
           </p>
         </div>
       )}
@@ -246,39 +329,71 @@ export default function LabelPrinting() {
         <>
           {file.totalCheck && !file.totalCheck.ok && (
             <p className="page-banner page-banner-error">
-              The file's Total row does not match its items:{' '}
+              The file's Total row does not match its items:{" "}
               {[
-                file.totalCheck.boxesFile !== file.totalCheck.boxesTotal
-                  && `CASE / BOX adds up to ${file.totalCheck.boxesFile} but Total says ${file.totalCheck.boxesTotal}`,
-                Math.abs(file.totalCheck.qtyFile - file.totalCheck.qtyTotal) >= 0.001
-                  && `Qty adds up to ${file.totalCheck.qtyFile} but Total says ${file.totalCheck.qtyTotal}`,
-              ].filter(Boolean).join('; ')}
+                file.totalCheck.boxesFile !== file.totalCheck.boxesTotal &&
+                  `CASE / BOX adds up to ${file.totalCheck.boxesFile} but Total says ${file.totalCheck.boxesTotal}`,
+                Math.abs(file.totalCheck.qtyFile - file.totalCheck.qtyTotal) >=
+                  0.001 &&
+                  `Qty adds up to ${file.totalCheck.qtyFile} but Total says ${file.totalCheck.qtyTotal}`,
+              ]
+                .filter(Boolean)
+                .join("; ")}
               . Check the export before printing.
             </p>
           )}
           {!file.totalCheck && (
             <p className="page-banner page-banner-warn">
-              No "Total" row found at the end of the sheet, so the file could not be checked for missing rows.
+              No "Total" row found at the end of the sheet, so the file could
+              not be checked for missing rows.
             </p>
           )}
 
           {/* Summary */}
           <div className="lbl-stats">
-            <div><span>Invoices</span><b>{summary.invoices}</b></div>
             <div>
-              <span>Items (SKU rows)</span><b>{summary.skus}</b>
-              {file.returnsSkipped > 0 && <small>{file.returnsSkipped} sales return line(s) skipped</small>}
+              <span>Invoices</span>
+              <b>{summary.invoices}</b>
             </div>
-            <div className={summary.errorRows ? 'crit' : ''}><span>Rows with missing data</span><b>{summary.errorRows}</b></div>
-            <div className={file.totalCheck ? (file.totalCheck.ok ? 'good' : 'crit') : ''}>
+            <div>
+              <span>Items (SKU rows)</span>
+              <b>{summary.skus}</b>
+              {file.returnsSkipped > 0 && (
+                <small>
+                  {file.returnsSkipped} sales return line(s) skipped
+                </small>
+              )}
+            </div>
+            <div className={summary.errorRows ? "crit" : ""}>
+              <span>Rows with missing data</span>
+              <b>{summary.errorRows}</b>
+            </div>
+            <div
+              className={
+                file.totalCheck ?
+                  file.totalCheck.ok ?
+                    "good"
+                  : "crit"
+                : ""
+              }
+            >
               <span>Total row check</span>
-              <b>{file.totalCheck ? (file.totalCheck.ok ? `✓ ${file.totalCheck.boxesTotal} boxes` : '✗ Mismatch') : '—'}</b>
+              <b>
+                {file.totalCheck ?
+                  file.totalCheck.ok ?
+                    `✓ ${file.totalCheck.boxesTotal} boxes`
+                  : "✗ Mismatch"
+                : "—"}
+              </b>
             </div>
-            <div className="good"><span>Labels to print</span><b>{summary.labels}</b></div>
+            <div className="good">
+              <span>Labels to print</span>
+              <b>{summary.labels}</b>
+            </div>
           </div>
 
           {/* Preview + settings: collapsible, closed by default so the table sits higher */}
-          <section className={`lbl-tools ${toolsOpen ? 'open' : ''}`}>
+          <section className={`lbl-tools ${toolsOpen ? "open" : ""}`}>
             <div className="lbl-tools-bar">
               <button
                 type="button"
@@ -287,15 +402,24 @@ export default function LabelPrinting() {
                 aria-controls="lbl-tools-body"
                 onClick={() => setToolsOpen((o) => !o)}
               >
-                <span className="lbl-tools-chev" aria-hidden="true">›</span>
-                <span className="lbl-tools-title">Label preview &amp; settings</span>
+                <span className="lbl-tools-chev" aria-hidden="true">
+                  ›
+                </span>
+                <span className="lbl-tools-title">
+                  Label preview &amp; settings
+                </span>
                 {previewLabel && (
                   <span className="lbl-tools-current">
                     {previewLabel.bill} · {previewLabel.item}
                   </span>
                 )}
               </button>
-              <button type="button" className="table-action-btn" onClick={printTest} disabled={!previewLabel || !!printJob}>
+              <button
+                type="button"
+                className="table-action-btn"
+                onClick={printTest}
+                disabled={!previewLabel || !!printJob}
+              >
                 Test print 1 label
               </button>
             </div>
@@ -307,39 +431,75 @@ export default function LabelPrinting() {
                     <h4>Label preview (100 × 50 mm)</h4>
                   </div>
                   <div className="lbl-preview">
-                    {previewLabel ? (
-                      <BoxLabel label={previewLabel} offsetX={settings.offsetX} offsetY={settings.offsetY} />
-                    ) : (
-                      <p className="lbl-muted">Fix the rows with missing data to see a preview.</p>
-                    )}
+                    {previewLabel ?
+                      <BoxLabel
+                        label={previewLabel}
+                        offsetX={settings.offsetX}
+                        offsetY={settings.offsetY}
+                      />
+                    : <p className="lbl-muted">
+                        Fix the rows with missing data to see a preview.
+                      </p>
+                    }
                   </div>
-                  <p className="lbl-muted lbl-hint">Click a row in the table to preview its label.</p>
+                  <p className="lbl-muted lbl-hint">
+                    Click a row in the table to preview its label.
+                  </p>
                 </div>
 
                 <div className="lbl-card lbl-settings">
                   <h4>Label settings</h4>
                   <label>
                     <span>Company name on label</span>
-                    <input value={settings.company} onChange={(e) => updateSetting('company', e.target.value)} />
+                    <input
+                      value={settings.company}
+                      onChange={(e) => updateSetting("company", e.target.value)}
+                    />
                   </label>
                   <label>
                     <span>Box numbering</span>
-                    <select value={settings.numbering} onChange={(e) => { updateSetting('numbering', e.target.value); setRanges({}); }}>
+                    <select
+                      value={settings.numbering}
+                      onChange={(e) => {
+                        updateSetting("numbering", e.target.value);
+                        setRanges({});
+                      }}
+                    >
                       <option value="sku">Per item (each SKU 1/N)</option>
-                      <option value="invoice">Per invoice (across items)</option>
+                      <option value="invoice">
+                        Per invoice (across items)
+                      </option>
                     </select>
                   </label>
                   <div className="lbl-offsets">
                     <label>
                       <span>Shift right (mm)</span>
-                      <input type="number" step="0.5" value={settings.offsetX} onChange={(e) => updateSetting('offsetX', Number(e.target.value) || 0)} />
+                      <input
+                        type="number"
+                        step="0.5"
+                        value={settings.offsetX}
+                        onChange={(e) =>
+                          updateSetting("offsetX", Number(e.target.value) || 0)
+                        }
+                      />
                     </label>
                     <label>
                       <span>Shift down (mm)</span>
-                      <input type="number" step="0.5" value={settings.offsetY} onChange={(e) => updateSetting('offsetY', Number(e.target.value) || 0)} />
+                      <input
+                        type="number"
+                        step="0.5"
+                        value={settings.offsetY}
+                        onChange={(e) =>
+                          updateSetting("offsetY", Number(e.target.value) || 0)
+                        }
+                      />
                     </label>
                   </div>
-                  <button type="button" className="table-action-btn" onClick={() => setSettings(DEFAULT_SETTINGS)}>
+                  <button
+                    type="button"
+                    className="table-action-btn"
+                    onClick={() => setSettings(DEFAULT_SETTINGS)}
+                  >
                     Reset settings
                   </button>
                 </div>
@@ -365,7 +525,7 @@ export default function LabelPrinting() {
                 onClick={printSelected}
                 disabled={!summary.labels || !!printJob}
               >
-                Print {summary.labels} label{summary.labels === 1 ? '' : 's'}
+                Print {summary.labels} label{summary.labels === 1 ? "" : "s"}
               </button>
             </div>
 
@@ -392,7 +552,11 @@ export default function LabelPrinting() {
                 </thead>
                 <tbody>
                   {visibleRows.length === 0 && (
-                    <tr><td colSpan={7} className="table-empty">No rows match the search.</td></tr>
+                    <tr>
+                      <td colSpan={7} className="table-empty">
+                        No rows match the search.
+                      </td>
+                    </tr>
                   )}
                   {visibleRows.map((row) => {
                     const range = rangeById[row.id];
@@ -400,10 +564,13 @@ export default function LabelPrinting() {
                     return (
                       <tr
                         key={row.id}
-                        className={`${bad ? 'row-error' : ''} ${previewRow?.id === row.id ? 'row-preview' : ''}`}
+                        className={`${bad ? "row-error" : ""} ${previewRow?.id === row.id ? "row-preview" : ""}`}
                         onClick={() => !bad && setPreviewId(row.id)}
                       >
-                        <td className="col-check" onClick={(e) => e.stopPropagation()}>
+                        <td
+                          className="col-check"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <input
                             type="checkbox"
                             aria-label={`Select ${row.bill} ${row.item}`}
@@ -414,29 +581,49 @@ export default function LabelPrinting() {
                         </td>
                         <td className="col-bill">
                           <div className="mono">{row.bill}</div>
-                          {row.party && <div className="lbl-muted lbl-party-cell">{row.party}</div>}
+                          {row.party && (
+                            <div className="lbl-muted lbl-party-cell">
+                              {row.party}
+                            </div>
+                          )}
                         </td>
                         <td>
                           <div className="lbl-cell-item">{row.item}</div>
-                          {bad && <div className="lbl-cell-error">Missing: {row.errors.join(', ')} (Excel row {row.excelRow})</div>}
+                          {bad && (
+                            <div className="lbl-cell-error">
+                              Missing: {row.errors.join(", ")} (Excel row{" "}
+                              {row.excelRow})
+                            </div>
+                          )}
                         </td>
-                        <td className="mono col-fsn">{row.fsn || '—'}</td>
+                        <td className="mono col-fsn">{row.fsn || "—"}</td>
                         <td className="mono col-po">
-                          <div>{row.po || '—'}</div>
-                          <div className="lbl-muted">{row.docket || '—'}</div>
-                          {row.transporter && <div className="lbl-muted lbl-transporter">{row.transporter}</div>}
+                          <div>{row.po || "—"}</div>
+                          <div className="lbl-muted">{row.docket || "—"}</div>
+                          {row.transporter && (
+                            <div className="lbl-muted lbl-transporter">
+                              {row.transporter}
+                            </div>
+                          )}
                         </td>
-                        <td className="col-boxes">{row.boxes || '—'}</td>
-                        <td className="col-range" onClick={(e) => e.stopPropagation()}>
-                          {range ? (
-                            <div className={`lbl-range ${range.valid ? '' : 'invalid'}`}>
+                        <td className="col-boxes">{row.boxes || "—"}</td>
+                        <td
+                          className="col-range"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {range ?
+                            <div
+                              className={`lbl-range ${range.valid ? "" : "invalid"}`}
+                            >
                               <input
                                 type="number"
                                 min={range.min}
                                 max={range.max}
                                 placeholder={range.min}
-                                value={ranges[row.id]?.from ?? ''}
-                                onChange={(e) => setRange(row.id, 'from', e.target.value)}
+                                value={ranges[row.id]?.from ?? ""}
+                                onChange={(e) =>
+                                  setRange(row.id, "from", e.target.value)
+                                }
                                 aria-label="From box"
                               />
                               <span>to</span>
@@ -445,12 +632,14 @@ export default function LabelPrinting() {
                                 min={range.min}
                                 max={range.max}
                                 placeholder={range.max}
-                                value={ranges[row.id]?.to ?? ''}
-                                onChange={(e) => setRange(row.id, 'to', e.target.value)}
+                                value={ranges[row.id]?.to ?? ""}
+                                onChange={(e) =>
+                                  setRange(row.id, "to", e.target.value)
+                                }
                                 aria-label="To box"
                               />
                             </div>
-                          ) : '—'}
+                          : "—"}
                         </td>
                       </tr>
                     );
@@ -465,22 +654,42 @@ export default function LabelPrinting() {
       <details className="lbl-card lbl-help">
         <summary>TSC printer setup (one time)</summary>
         <ol>
-          <li>Windows → Printers → <b>TSC printer</b> → Printing preferences → Page Setup → <b>New</b> stock: width <b>100 mm</b>, height <b>50 mm</b>.</li>
-          <li>Stock tab: Media type <b>Labels with gaps</b>, gap height as on the roll (usually 2–3 mm).</li>
-          <li>In Chrome's print dialog: choose the TSC printer, Paper size <b>100 × 50 mm</b>, Margins <b>None</b>, Scale <b>Default/100</b>, and untick <b>Headers and footers</b>.</li>
-          <li>Use <b>Test print 1 label</b> first. If the text sits off-centre, adjust <i>Shift right / Shift down</i> in Label settings.</li>
+          <li>
+            Windows → Printers → <b>TSC printer</b> → Printing preferences →
+            Page Setup → <b>New</b> stock: width <b>100 mm</b>, height{" "}
+            <b>50 mm</b>.
+          </li>
+          <li>
+            Stock tab: Media type <b>Labels with gaps</b>, gap height as on the
+            roll (usually 2–3 mm).
+          </li>
+          <li>
+            In Chrome's print dialog: choose the TSC printer, Paper size{" "}
+            <b>100 × 50 mm</b>, Margins <b>None</b>, Scale <b>Default/100</b>,
+            and untick <b>Headers and footers</b>.
+          </li>
+          <li>
+            Use <b>Test print 1 label</b> first. If the text sits off-centre,
+            adjust <i>Shift right / Shift down</i> in Label settings.
+          </li>
         </ol>
       </details>
 
-      {printJob && createPortal(
-        <div className="label-print-root">
-          <style>{'@page { size: 100mm 50mm; margin: 0; }'}</style>
-          {printJob.map((label) => (
-            <BoxLabel key={label.key} label={label} offsetX={settings.offsetX} offsetY={settings.offsetY} />
-          ))}
-        </div>,
-        document.body,
-      )}
+      {printJob &&
+        createPortal(
+          <div className="label-print-root">
+            <style>{"@page { size: 100mm 50mm; margin: 0; }"}</style>
+            {printJob.map((label) => (
+              <BoxLabel
+                key={label.key}
+                label={label}
+                offsetX={settings.offsetX}
+                offsetY={settings.offsetY}
+              />
+            ))}
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

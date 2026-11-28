@@ -1,21 +1,23 @@
-import { useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { getSession, clearSession } from '../../lib/session';
-import DesignToggle from '../DesignToggle';
-import { BellIcon, ChevronDownIcon, MenuIcon } from '../Icons';
+import { useEffect, useRef, useState } from "react";
+
+import { useLocation, useNavigate } from "react-router-dom";
+
+import { clearSession, getSession } from "../../lib/session";
+import DesignToggle from "../DesignToggle";
+import { BellIcon, ChevronDownIcon, MenuIcon } from "../Icons";
 
 const BREADCRUMB = {
-  '/dashboard': 'Dashboard',
-  '/gatepass/review': 'Gate Pass · Review Queue',
-  '/gatepass/all': 'Gate Pass · All Entries',
-  '/users': 'User Management · Users',
-  '/users/roles': 'User Management · Roles & Pages',
-  '/dispatch/labels': 'Dispatch · Label Printing',
-  '/reports/mis': 'Reports · MIS',
+  "/dashboard": "Dashboard",
+  "/gatepass/review": "Gate Pass · Review Queue",
+  "/gatepass/all": "Gate Pass · All Entries",
+  "/users": "User Management · Users",
+  "/users/roles": "User Management · Roles & Pages",
+  "/dispatch/labels": "Dispatch · Label Printing",
+  "/reports/mis": "Reports · MIS",
 };
 
 function displayName(session) {
-  return session?.name || session?.username || '';
+  return session?.name || session?.username || "";
 }
 
 export default function TopNav({ collapsed, onToggle, isMobile, mobileOpen }) {
@@ -24,30 +26,36 @@ export default function TopNav({ collapsed, onToggle, isMobile, mobileOpen }) {
   const location = useLocation();
   const navigate = useNavigate();
   const session = getSession();
-  const crumb = BREADCRUMB[location.pathname] || 'Vimpact App';
+  const crumb = BREADCRUMB[location.pathname] || "Vimpact App";
   const name = displayName(session);
-  const initial = (name || 'U').charAt(0).toUpperCase();
+  const initial = (name || "U").charAt(0).toUpperCase();
 
   useEffect(() => {
     function onClick(e) {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     }
-    document.addEventListener('mousedown', onClick);
-    return () => document.removeEventListener('mousedown', onClick);
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
   function handleLogout() {
     clearSession();
-    navigate('/login', { replace: true });
+    navigate("/login", { replace: true });
   }
 
   return (
-    <header className={`topnav ${collapsed ? 'collapsed' : ''}`}>
+    <header className={`topnav ${collapsed ? "collapsed" : ""}`}>
       <button
         type="button"
         className="topnav-toggle"
         onClick={onToggle}
-        aria-label={isMobile ? (mobileOpen ? 'Close menu' : 'Open menu') : 'Toggle sidebar'}
+        aria-label={
+          isMobile ?
+            mobileOpen ?
+              "Close menu"
+            : "Open menu"
+          : "Toggle sidebar"
+        }
         aria-expanded={isMobile ? mobileOpen : !collapsed}
       >
         <MenuIcon size={20} />
@@ -55,23 +63,27 @@ export default function TopNav({ collapsed, onToggle, isMobile, mobileOpen }) {
 
       <div className="topnav-crumb">
         {!isMobile && <span>Home / </span>}
-        <strong>{isMobile ? crumb.split(' · ').pop() : crumb}</strong>
+        <strong>{isMobile ? crumb.split(" · ").pop() : crumb}</strong>
       </div>
 
       <div className="topnav-right">
         <DesignToggle compact />
         <span className="topnav-sep" aria-hidden="true" />
-        <button type="button" className="topnav-icon" aria-label="Notifications">
+        <button
+          type="button"
+          className="topnav-icon"
+          aria-label="Notifications"
+        >
           <BellIcon size={18} />
           <span className="topnav-badge">3</span>
         </button>
 
         <div
-          className={`topnav-user ${open ? 'open' : ''}`}
+          className={`topnav-user ${open ? "open" : ""}`}
           ref={ref}
           onClick={() => setOpen((o) => !o)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
+            if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               setOpen((o) => !o);
             }
@@ -80,12 +92,18 @@ export default function TopNav({ collapsed, onToggle, isMobile, mobileOpen }) {
           tabIndex={0}
           aria-haspopup="menu"
           aria-expanded={open}
-          aria-label={name ? `Account menu for ${name}` : 'Account menu'}
+          aria-label={name ? `Account menu for ${name}` : "Account menu"}
         >
-          <div className="topnav-avatar" aria-hidden="true">{initial}</div>
-          <span className="topnav-name">{name || 'User'}</span>
-          {session?.role && <span className="topnav-role-chip">{session.role}</span>}
-          <span className="topnav-caret" aria-hidden="true"><ChevronDownIcon size={14} /></span>
+          <div className="topnav-avatar" aria-hidden="true">
+            {initial}
+          </div>
+          <span className="topnav-name">{name || "User"}</span>
+          {session?.role && (
+            <span className="topnav-role-chip">{session.role}</span>
+          )}
+          <span className="topnav-caret" aria-hidden="true">
+            <ChevronDownIcon size={14} />
+          </span>
 
           {open && (
             <div className="topnav-dropdown" role="menu">

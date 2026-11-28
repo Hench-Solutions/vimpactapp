@@ -6,20 +6,48 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "oxlint",
-    "preview": "vite preview"
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "lint:fix": "eslint . --fix",
+    "fmt": "prettier --write \"**/*.{js,jsx,mjs,json,css,md}\" --cache",
+    "fmt:check": "prettier --check \"**/*.{js,jsx,mjs,json,css,md}\" --cache",
+    "validate": "eslint . && prettier --check \"**/*.{js,jsx,mjs,json,css,md}\" --cache && vite build",
+    "clean": "rm -rf dist node_modules/.cache",
+    "cleani": "rm -rf dist node_modules && bun i",
+    "prepare": "husky"
   },
   "dependencies": {
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "react-router-dom": "^7.18.2",
-    "xlsx": "0.18.5"
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.7",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
-    "@vitejs/plugin-react": "^6.1.0",
-    "oxlint": "^1.79.0",
-    "vite": "^8.2.2"
+    "@eslint/js": "^10.0.1",
+    "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
+    "@types/react": "^19.3.3",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "eslint": "^10.16.0",
+    "eslint-config-prettier": "^10.1.9",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.8",
+    "globals": "^17.14.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.3",
+    "prettier": "^3.10.1",
+    "vite": "^8.4.0"
+  },
+  "engines": {
+    "node": ">=22.22.1"
+  },
+  "lint-staged": {
+    "*.{js,jsx,mjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,md}": [
+      "prettier --write"
+    ]
   }
 }

@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { getSession, clearSession } from '../../lib/session';
-import { getMenuForRole } from '../../lib/menus';
-import logo from '../../assets/vimpact-logo.png';
-import { LogoutIcon } from '../Icons';
+import { useEffect, useState } from "react";
+
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+
+import logo from "../../assets/vimpact-logo.png";
+import { getMenuForRole } from "../../lib/menus";
+import { clearSession, getSession } from "../../lib/session";
+import { LogoutIcon } from "../Icons";
 
 function pathMatches(pathname, target) {
   if (!target) return false;
@@ -23,7 +25,6 @@ export default function Sidebar({ collapsed, mobileOpen, onNavigate }) {
     for (const section of menu) {
       if (section.items.length === 0 && section.pageUrl) {
         if (pathMatches(location.pathname, section.pageUrl)) {
-          // oxlint-disable-next-line react/set-state-in-effect
           setOpenSection(section.pageId);
           return;
         }
@@ -40,7 +41,7 @@ export default function Sidebar({ collapsed, mobileOpen, onNavigate }) {
 
   function handleLogout() {
     clearSession();
-    navigate('/login', { replace: true });
+    navigate("/login", { replace: true });
   }
 
   function handleSectionClick(section) {
@@ -49,13 +50,15 @@ export default function Sidebar({ collapsed, mobileOpen, onNavigate }) {
       navigate(section.pageUrl);
       onNavigate?.();
     } else {
-      setOpenSection((prev) => (prev === section.pageId ? null : section.pageId));
+      setOpenSection((prev) =>
+        prev === section.pageId ? null : section.pageId,
+      );
     }
   }
 
   return (
     <aside
-      className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}
+      className={`sidebar ${collapsed ? "collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}
       aria-label="Main navigation"
     >
       <div className="sidebar-brand">
@@ -67,7 +70,8 @@ export default function Sidebar({ collapsed, mobileOpen, onNavigate }) {
         {menu.map((section) => {
           const isDirect = section.items.length === 0 && !!section.pageUrl;
           const isOpen = openSection === section.pageId;
-          const isDirectActive = isDirect && pathMatches(location.pathname, section.pageUrl);
+          const isDirectActive =
+            isDirect && pathMatches(location.pathname, section.pageUrl);
           const hasActiveChild = section.items.some(
             (i) => i.pageUrl && pathMatches(location.pathname, i.pageUrl),
           );
@@ -75,27 +79,29 @@ export default function Sidebar({ collapsed, mobileOpen, onNavigate }) {
           return (
             <div className="sidebar-section" key={section.pageId}>
               <div
-                className={`sidebar-title ${isOpen || isDirectActive || hasActiveChild ? 'open' : ''} ${isDirectActive ? 'active' : ''} ${hasActiveChild ? 'child-active' : ''}`}
+                className={`sidebar-title ${isOpen || isDirectActive || hasActiveChild ? "open" : ""} ${isDirectActive ? "active" : ""} ${hasActiveChild ? "child-active" : ""}`}
                 onClick={() => handleSectionClick(section)}
                 role="button"
                 tabIndex={0}
                 title={collapsed ? section.section : undefined}
-                aria-current={isDirectActive ? 'page' : undefined}
+                aria-current={isDirectActive ? "page" : undefined}
                 aria-expanded={!isDirect ? isOpen : undefined}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
+                  if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
                     handleSectionClick(section);
                   }
                 }}
               >
                 <span className="sidebar-title-label">{section.section}</span>
-                {!isDirect && <i className={`chev ${isOpen ? 'rot' : ''}`}>›</i>}
+                {!isDirect && (
+                  <i className={`chev ${isOpen ? "rot" : ""}`}>›</i>
+                )}
               </div>
 
               {!isDirect && (
                 <div
-                  className={`sidebar-body ${isOpen ? 'open' : ''}`}
+                  className={`sidebar-body ${isOpen ? "open" : ""}`}
                   hidden={!isOpen}
                   inert={!isOpen ? true : undefined}
                 >
@@ -105,12 +111,16 @@ export default function Sidebar({ collapsed, mobileOpen, onNavigate }) {
                       to={item.pageUrl}
                       end
                       title={collapsed ? item.pageTitle : undefined}
-                      className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                      className={({ isActive }) =>
+                        `sidebar-link ${isActive ? "active" : ""}`
+                      }
                       onClick={() => onNavigate?.()}
                       tabIndex={isOpen ? undefined : -1}
                     >
                       <span className="dot" aria-hidden="true" />
-                      <span className="sidebar-link-text">{item.pageTitle}</span>
+                      <span className="sidebar-link-text">
+                        {item.pageTitle}
+                      </span>
                     </NavLink>
                   ))}
                 </div>

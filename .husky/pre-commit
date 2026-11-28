@@ -1,0 +1,7 @@
+# Format and lint staged files.
+bunx lint-staged
+
+# Husky overrides the global core.hooksPath, so run the ggshield secret scan here too.
+if command -v ggshield >/dev/null 2>&1; then
+  ggshield secret scan pre-commit "$@"
+fi
